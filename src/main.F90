@@ -19,14 +19,7 @@ program main
 ! FD code for DNS of canonical compressible wall-bounded turbulent flows
 !
 ! Authors:
-! Sergio Pirozzoli, Matteo Bernardini
-!
-! Record of revisions:
-!     Date                   Programmer                                  Description of change
-!    ======                 ============                                =======================
-!  before 2019      S. Pirozzoli  & M. Bernardini                             Original code
-!  05/11/2019       M. Bernardini & S. Sathyanarayana                         F77 ===> F90
-!  22/11/2019       M. Bernardini & F. Salvadore                               GPU version 
+! Sergio Pirozzoli, Matteo Bernardini, Davide Modesti, Francesco Salvadore
 !
  use mod_streams
  implicit none
