@@ -20,6 +20,7 @@ solving the fully compressible Navier-Stokes equations. Currently, three canonic
 * compressible turbulent channel flow
 * compressible zero-pressure-gradient turbulent boundary layer
 * supersonic oblique shock wave/turbulent boundary-layer interaction
+
 STREAmS can be used in local environments but its main expected usage is with HPC architectures.
 
 # Compiling
