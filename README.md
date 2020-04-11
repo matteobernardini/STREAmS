@@ -173,25 +173,6 @@ Look at the input files in the examples folder to start with typical cases
  6) bulk flow velocity (conserved to machine accuracy),
  7) bulk temperature.
  For instance, plotting the fourth column vs. the second allows the user to check the time history of the pressure gradient.
-### Mean flow statistics `channstat.prof`
-    The file `channstat.prof` contains the mean channel flow statistics.
-    This file is printed at the end of each run and it contains the mean flow statistics averaged
-    in the homogeneous spatial directions and in time (statistics are progressively updated in time at each restart if idiski=2, or collected from scratch if idisk=1).
-    The file `channstat.prof` contains 15 columns:
-1) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/08b335933c05df68e8439a765e868cdf.svg?invert_in_darkmode" align=middle width=26.243415pt height=24.56553pt/> is the wall-normal coordinate, normalized with the channel half width
-2) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/9b58ae6c5c8bc012390df2685d76bbb1.svg?invert_in_darkmode" align=middle width=101.102265pt height=26.12412pt/> the wall-normal coordinate in viscous units
-3) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/b2efe697138b1a562ebfa71d47ec3d6f.svg?invert_in_darkmode" align=middle width=110.867955pt height=28.25757pt/> the wall-normal coordinate transformed according to Trettel & Larsson in viscous units
-4) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/e1210f0fa24ba17ea9fd4da41c310dab.svg?invert_in_darkmode" align=middle width=32.733195pt height=24.56553pt/> the mean streamwise velocity averaged according to Favre, normalized with the bulk flow velocity
-5) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/edd39792d631fff9fc9340cbcd03af76.svg?invert_in_darkmode" align=middle width=34.33848pt height=24.56553pt/> the mean streamwise velocity averaged according to Favre, normalized with the friction velocity
-6) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/5168dd0c22b7ee67557ebdc76a52a925.svg?invert_in_darkmode" align=middle width=48.956655pt height=24.56553pt/> the mean streamwise velocity transformed according to van Driest, normalized with the friction velocity
-7) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/2fb4a896c47e22ceb0b1ad62e552a0bf.svg?invert_in_darkmode" align=middle width=44.6589pt height=24.56553pt/> the mean streamwise velocity transformed according to Trettel & Larsson in viscous units
-8) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/6d150b0d92a9b0f9f8ce9bf06e99af7c.svg?invert_in_darkmode" align=middle width=34.968945pt height=24.56553pt/> the mean density profile, normalized with the mean wall density
-9) <img src="https://rawgit.com/in      git@github.com:matteobernardini/STREAmS/master/svgs/9c48fce70048f82f658109eef23b7b71.svg?invert_in_darkmode" align=middle width=69.25347pt height=34.08471pt/> the Favre streamwise Reynolds stress, normalized with the wall-shear stress
-10) <img src="https://rawgit.com/in     git@github.com:matteobernardini/STREAmS/master/svgs/7c2b51045dc88620a88a255165e20708.svg?invert_in_darkmode" align=middle width=67.54869pt height=34.08471pt/> the Favre wall-normal Reynolds stress, normalized with the wall-shear stress
-11) <img src="https://rawgit.com/in     git@github.com:matteobernardini/STREAmS/master/svgs/f243b45c92e4fdc93b7e8280bcebb799.svg?invert_in_darkmode" align=middle width=74.85456pt height=36.5409pt/> the Favre spanwise Reynolds stress, normalized with the wall-shear stress
-12) <img src="https://rawgit.com/in     git@github.com:matteobernardini/STREAmS/master/svgs/b1254d1845c343e24eb7465dad8339d0.svg?invert_in_darkmode" align=middle width=68.40108pt height=34.08471pt/> the Favre shear Reynolds stress, normalized with the wall-shear stress
-13) <img src="https://rawgit.com/in     git@github.com:matteobernardini/STREAmS/master/svgs/41ea061742760dfbfe5de2c01f1c8bc1.svg?invert_in_darkmode" align=middle width=39.43071pt height=27.72594pt/>  the mean temperature profile, normalized with the wall temperature
-14) <img src="https://rawgit.com/in     git@github.com:matteobernardini/STREAmS/master/svgs/6673acc30acf7858774f24361b9bcecf.svg?invert_in_darkmode" align=middle width=46.78971pt height=30.4656pt/> the density fluctuations normalized with the mean wall density
-15) <img src="https://rawgit.com/in     git@github.com:matteobernardini/STREAmS/master/svgs/6b014bcc811232a0bb81b6b3ab828c69.svg?invert_in_darkmode" align=middle width=51.25164pt height=30.4656pt/> The temperature fluctuations, normalized with the wall temperature
+
 
 
