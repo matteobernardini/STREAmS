@@ -173,12 +173,5 @@ Look at the input files in the examples folder to start with typical cases
  6) bulk flow velocity (conserved to machine accuracy),
  7) bulk temperature.
  For instance, plotting the fourth column vs. the second allows the user to check the time history of the pressure gradient.
-### Mean flow statistics `channstat.prof`
-    The file `channstat.prof` contains the mean channel flow statistics.
-    This file is printed at the end of each run and it contains the mean flow statistics averaged
-    in the homogeneous spatial directions and in time (statistics are progressively updated in time at each restart if idiski=2, or collected from scratch if idisk=1).
-    The file `channstat.prof` contains 15 columns:
-    1) $y/h$ is the wall-normal coordinate, normalized with the channel half width
-    2) $y^+ = y/delta_v$ the wall-normal coordinate in viscous units
-    3) y_T^+ = y_T/delta_v the wall-normal coordinate transformed according to Trettel & Larsson in viscous units
+
 
