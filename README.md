@@ -212,31 +212,31 @@ Look at the input files in the examples folder to start with typical cases
   The files cf_xxx.dat are ASCII files and the number xxx refers to the Cartesian streamwise MPI block to which the file belong.
   These files is printed at the end of each run. Statistics are progressively updated in time at each restart if idiski=2, or collected from scratch if idisk=1.
   The file contains 13 columns:
-  1) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/a7de9ea243c799172d54f6c73ca17aa2.svg?invert_in_darkmode" align=middle width=31.355115pt height=24.56553pt/> streamwise coordinate normalized with the inlet boundary layer thickness
-  2) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/95b92a3b01f370498645efb59e52ff36.svg?invert_in_darkmode" align=middle width=19.376115pt height=22.38192pt/> skin-friction coefficient
-  3) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/b91858acbc5918f19aa579c1c71a454a.svg?invert_in_darkmode" align=middle width=19.19247pt height=22.74591pt/> friction Reynolds number 
-  4) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/7b9a0316a2fcd7f01cfd556eedf72e96.svg?invert_in_darkmode" align=middle width=14.94405pt height=22.38192pt/> Compressible shape factor
-  5) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/b76f125299e13d61d8c9b80929221c5f.svg?invert_in_darkmode" align=middle width=32.195295pt height=22.38192pt/> Incompressible shape factor 
-  6) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/018562a8c71022027090ab072944bb8e.svg?invert_in_darkmode" align=middle width=43.20096pt height=24.56553pt/> boundary layer thickness, normalized with the inlet boundary layer thickness
-  7) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/27e556cf3caa0673ac49a8f0de3c73ca.svg?invert_in_darkmode" align=middle width=8.1430305pt height=22.74591pt/> Compressible displacement thickness
-  8) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/19889dd126af8c9b2d5d30c60cb5606d.svg?invert_in_darkmode" align=middle width=26.26998pt height=22.74591pt/> Compressible momentum thickness
-  9) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/89144b2a5e5b3f3a3663daf61886c11b.svg?invert_in_darkmode" align=middle width=16.739745pt height=14.10255pt/> friction velocity
-  10) Reynolds number based on the incompressible boundary layer thickness 
-  11) Incompressible friction coefficient, according to van Driest II transofrmation
-  12)
-  13) Mean pressure rms at the wall normalized with the wall-shear stress 
+1) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/a7de9ea243c799172d54f6c73ca17aa2.svg?invert_in_darkmode" align=middle width=31.355115pt height=24.56553pt/> streamwise coordinate normalized with the inlet boundary layer thickness
+2) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/95b92a3b01f370498645efb59e52ff36.svg?invert_in_darkmode" align=middle width=19.376115pt height=22.38192pt/> skin-friction coefficient
+3) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/b91858acbc5918f19aa579c1c71a454a.svg?invert_in_darkmode" align=middle width=19.19247pt height=22.74591pt/> friction Reynolds number 
+4) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/7b9a0316a2fcd7f01cfd556eedf72e96.svg?invert_in_darkmode" align=middle width=14.94405pt height=22.38192pt/> Compressible shape factor
+5) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/b76f125299e13d61d8c9b80929221c5f.svg?invert_in_darkmode" align=middle width=32.195295pt height=22.38192pt/> Incompressible shape factor 
+6) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/018562a8c71022027090ab072944bb8e.svg?invert_in_darkmode" align=middle width=43.20096pt height=24.56553pt/> boundary layer thickness, normalized with the inlet boundary layer thickness
+7) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/27e556cf3caa0673ac49a8f0de3c73ca.svg?invert_in_darkmode" align=middle width=8.1430305pt height=22.74591pt/> Compressible displacement thickness
+8) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/19889dd126af8c9b2d5d30c60cb5606d.svg?invert_in_darkmode" align=middle width=26.26998pt height=22.74591pt/> Compressible momentum thickness
+9) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/89144b2a5e5b3f3a3663daf61886c11b.svg?invert_in_darkmode" align=middle width=16.739745pt height=14.10255pt/> friction velocity
+10) Reynolds number based on the incompressible boundary layer thickness 
+11) Incompressible friction coefficient, according to van Driest II transofrmation
+12)
+13) Mean pressure rms at the wall normalized with the wall-shear stress 
 ### stat files
    The files stat_nnn.dat are ASCII containing the mean boundary layer statistics.
    The files are printed at the end of each run. Statistics are progressively updated in time at each restart if idiski=2, or collected from scratch if idisk=1.
    The number nnn indicates the global mesh index in the streamwise direction at which statistics are printed.
    The files contains 10 columns:
-   1) $y/delta99$, wall-normal coordinate, normalized with the local boundary layer thickness
-   2) $y^+=y/delta_v$ wall-normal coordinate, normalized with the viscous lenght scale
-   3) $u^+=u/u_\tau$ the Favre averaged streamwise velocity, normalized with the friction velocity
-   4) $u_{vd}/u_\tau$ the streamwise velocity transformed according to van Driest
-   5) $u_{rms}^+$ the density scaled streamwise velocity rms
-   6) $v_{rms}^+$ the density scaled wall-normal velocity rms, in viscous units
-   7) $w_{rms}^+$ the density scaled spanwise velocity rms, in viscous units  
-   8) $uv^+$      the density scaled Reynolds shear stress, in viscous units
-   9) $\sqrt{\overline{\rho}/\overline{\rho}_w}$ the square root of the mean density, normalized with the wall density
-   10) The pressure rms, normalized with the square root of the wall-shear stress. 
+1) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/f709689c86153cfc47fc13bd71263621.svg?invert_in_darkmode" align=middle width=69.11487pt height=24.56553pt/>, wall-normal coordinate, normalized with the local boundary layer thickness
+2) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/413e5e559443639a2283994f9ccf0131.svg?invert_in_darkmode" align=middle width=101.102265pt height=26.12412pt/> wall-normal coordinate, normalized with the viscous lenght scale
+3) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/c003ef34c0f5583624f88cf9611fa556.svg?invert_in_darkmode" align=middle width=76.46166pt height=26.12412pt/> the Favre averaged streamwise velocity, normalized with the friction velocity
+4) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/5168dd0c22b7ee67557ebdc76a52a925.svg?invert_in_darkmode" align=middle width=48.956655pt height=24.56553pt/> the streamwise velocity transformed according to van Driest
+5) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/e387aa38fb0526c04f95bdf2108c30dd.svg?invert_in_darkmode" align=middle width=33.612315pt height=26.12412pt/> the density scaled streamwise velocity rms
+6) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/8c8bd17eadff3457884dec9db2dc1881.svg?invert_in_darkmode" align=middle width=32.175495pt height=26.12412pt/> the density scaled wall-normal velocity rms, in viscous units
+7) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/e8dfa6bfdb753c7e780b5fa7aee92971.svg?invert_in_darkmode" align=middle width=35.96175pt height=26.12412pt/> the density scaled spanwise velocity rms, in viscous units  
+8) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/7764c497204b291fd5e3218cb50d2a2a.svg?invert_in_darkmode" align=middle width=27.95694pt height=26.12412pt/>      the density scaled Reynolds shear stress, in viscous units
+9) <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/b9943858c2a1621a8a2449fdec1bf1a9.svg?invert_in_darkmode" align=middle width=52.296585pt height=29.42478pt/> the square root of the mean density, normalized with the wall density
+10) The pressure rms, normalized with the square root of the wall-shear stress. 
