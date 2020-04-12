@@ -239,4 +239,4 @@ Look at the input files in the examples folder to start with typical cases
 7) <img src="svgs/e8dfa6bfdb753c7e780b5fa7aee92971.svg?invert_in_darkmode&sanitize=true" align=middle width=35.96175pt height=26.12412pt/> density scaled spanwise velocity rms, in viscous units  
 8) <img src="svgs/36a2fed911bbc7faf519d32ca9a89e30.svg?invert_in_darkmode&sanitize=true" align=middle width=37.245615pt height=34.9239pt/> density scaled Reynolds shear stress, in viscous units
 9) <img src="svgs/b9943858c2a1621a8a2449fdec1bf1a9.svg?invert_in_darkmode&sanitize=true" align=middle width=52.296585pt height=29.42478pt/> square root of the mean density, normalized with the wall density
-10)<img src="svgs/ac9c81a75856142b321298cf3bd14b97.svg?invert_in_darkmode&sanitize=true" align=middle width=62.57625pt height=42.84918pt/>  pressure rms, normalized with the square root of the wall-shear stress. 
+10) <img src="svgs/ac9c81a75856142b321298cf3bd14b97.svg?invert_in_darkmode&sanitize=true" align=middle width=62.57625pt height=42.84918pt/>  pressure rms, normalized with the square root of the wall-shear stress. 
