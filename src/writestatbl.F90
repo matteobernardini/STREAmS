@@ -25,9 +25,9 @@ subroutine writestatbl
   write(10,*) 'zone i=',nx,', j=',ny
   do j=1,ny
    do i=1,nx
-    ufav(i,j) = w_av(13,i,j)/w_av(1,i,j)
-    vfav(i,j) = w_av(14,i,j)/w_av(1,i,j)
-    wfav(i,j) = w_av(15,i,j)/w_av(1,i,j)
+    ufav(i,j) = w_av(13,i,j)/w_av(1,i,j)/u0
+    vfav(i,j) = w_av(14,i,j)/w_av(1,i,j)/u0
+    wfav(i,j) = w_av(15,i,j)/w_av(1,i,j)/u0
     write(10,100) x(i),y(j),(w_av(l,i,j),l=1,nvmean)
    enddo
   enddo
@@ -110,7 +110,7 @@ subroutine writestatbl
    fc   = fc/(asin(alfa)+asin(beta))**2
    ftheta = rmue/rmuw
    cfinc = cf*fc
-   rethetainc = re*theta*ftheta
+   rethetainc = re*thetainc*ftheta
    rethetawall = re*theta*rmue/rmuw
 !
    write(10,100) x(i),cf,retau,shapef,shapefinc,delta99,dstar,theta,utau,rethetainc,cfinc,rethetawall,prmsw/tauw
@@ -144,7 +144,7 @@ subroutine writestatbl
     wrmsp  = sqrt(abs(w_av(18,i,j)/w_av(1,i,j)-wfav(i,j)*wfav(i,j)))/utau
     uvp    =         (w_av(19,i,j)/w_av(1,i,j)-ufav(i,j)*vfav(i,j)) /utau**2
     rhofac = sqrt(w_av(1,i,j)/rhow)
-    prmsp  = sqrt(abs(w_av(11,i,j)-w_av(5,i,j)**2))
+    prmsp  = sqrt(abs(w_av(11,i,j)-w_av(5,i,j)**2)/tauw)
     write(15,100) y99,yp,up,uvdp,urmsp,vrmsp,wrmsp,uvp,rhofac,prmsp
    enddo 
    close(15)
