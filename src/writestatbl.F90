@@ -64,7 +64,7 @@ subroutine writestatbl
    uden = ufav(i,j99+1)-ufav(i,j99)
    delta99 = y(j99)+dely*(unum/uden) ! b._mykindl._mykind thickness
    retau = delta99/deltav
-   prmswp = sqrt(abs(w_av(11,i,1)-w_av(5,i,1)**2)/tauw)
+   prmsp = sqrt(abs(w_av(11,i,1)-w_av(5,i,1)**2)/tauw)
    d99_vec(i)    = delta99
    deltav_vec(i) = deltav
    utau_vec(i)   = utau
@@ -113,7 +113,7 @@ subroutine writestatbl
    rethetainc = re*thetainc*ftheta
    rethetawall = re*theta*rmue/rmuw
 !
-   write(10,100) x(i),cf,retau,shapef,shapefinc,delta99,dstar,theta,utau,rethetainc,cfinc,rethetawall,prmswp
+   write(10,100) x(i),cf,retau,shapef,shapefinc,delta99,dstar,theta,utau,rethetainc,cfinc,rethetawall,prmsp
   enddo   
   close(10)
 !
