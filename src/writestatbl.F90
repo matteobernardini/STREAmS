@@ -25,9 +25,9 @@ subroutine writestatbl
   write(10,*) 'zone i=',nx,', j=',ny
   do j=1,ny
    do i=1,nx
-    ufav(i,j) = w_av(13,i,j)/w_av(1,i,j)/u0
-    vfav(i,j) = w_av(14,i,j)/w_av(1,i,j)/u0
-    wfav(i,j) = w_av(15,i,j)/w_av(1,i,j)/u0
+    ufav(i,j) = w_av(13,i,j)/w_av(1,i,j)
+    vfav(i,j) = w_av(14,i,j)/w_av(1,i,j)
+    wfav(i,j) = w_av(15,i,j)/w_av(1,i,j)
     write(10,100) x(i),y(j),(w_av(l,i,j),l=1,nvmean)
    enddo
   enddo
