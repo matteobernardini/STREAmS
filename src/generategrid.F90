@@ -15,6 +15,7 @@ subroutine generategrid
  real(mykind), dimension(nymax+ng) :: tmpyg
 !
  dx = rlx/(nxmax-1)
+ if (iflow==0) dx = rlx/nxmax
  do i=1-ng,nxmax+ng+1
   xg(i) = (i-1)*dx
  enddo
