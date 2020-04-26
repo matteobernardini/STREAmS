@@ -9,16 +9,28 @@ subroutine df_par
  real(mykind), dimension(3,ny) :: ylen ! Integral lengthscale in y
  real(mykind), dimension(3,ny) :: zlen ! Integral lengthscale in z
  real(mykind) :: sumbx,sumby,sumbz
+ real(mykind) :: zlenin_u,zlenin_v,zlenin_w
+ real(mykind) :: zlenou_u,zlenou_v,zlenou_w
+ real(mykind) :: ftany
 !      
+!Outer z scale for u,v,w
+ zlenou_u =  0.40_mykind
+ zlenou_v =  0.30_mykind
+ zlenou_w =  0.40_mykind
+!Inner z scale for u,v,w
+ zlenin_u = min(150._mykind/retauinflow,zlenou_u)
+ zlenin_v = min( 75._mykind/retauinflow,zlenou_v)
+ zlenin_w = min(150._mykind/retauinflow,zlenou_w)
  do j=1,ny
-  zlen(1,j) = min(0.05_mykind+(y(j)/0.3_mykind)*0.20_mykind,0.25_mykind)
-  zlen(2,j) = min(0.05_mykind+(y(j)/0.3_mykind)*0.15_mykind,0.20_mykind)
-  zlen(3,j) = min(0.05_mykind+(y(j)/0.3_mykind)*0.20_mykind,0.25_mykind)
+  ftany      = 0.5_mykind*(1._mykind+tanh((y(j)-.2_mykind)/.03_mykind)) ! blending function
+  zlen(1,j)  = zlenin_u+ftany*(zlenou_u-zlenin_u)
+  zlen(2,j)  = zlenin_v+ftany*(zlenou_v-zlenin_v)
+  zlen(3,j)  = zlenin_w+ftany*(zlenou_w-zlenin_w)
  enddo
- ylen = 0.7_mykind*zlen
- xlen_df(1) = .50_mykind
- xlen_df(2) = .15_mykind
- xlen_df(3) = .15_mykind
+ ylen = 0.7_mykind*zlen ! Xie & Castro, FTC 2008
+ xlen_df(1) = .80_mykind
+ xlen_df(2) = .30_mykind
+ xlen_df(3) = .30_mykind
 !
  bx_df = 0.
  by_df = 0.
