@@ -32,6 +32,7 @@ subroutine readrst
  close(11)
 !
  if (file1_exists) then
+  call mpi_barrier(mpi_comm_world, iermpi)
   if (masterproc) then
    oldname = c_char_"finaltime.dat"//c_null_char
    newname = c_char_"finaltime.bak"//c_null_char
