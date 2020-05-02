@@ -26,9 +26,10 @@ subroutine computemetrics
  endif
 !
  rlx = xg(nxmax)-xg(1)
+ if (iflow==0) rlx = xg(nxmax+1)-xg(1)
  rly = yg(nymax)-yg(1)
  if (ndim==3) then
-  rlz = zg(nzmax)-zg(1)
+  rlz = zg(nzmax+1)-zg(1)
  else
   rlz = 1._mykind
  endif
