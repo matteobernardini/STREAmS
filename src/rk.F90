@@ -37,8 +37,8 @@ subroutine rk
  !@cuf iercuda=cudaDeviceSynchronize()
 !
 #ifdef CUDA_ASYNC
-  call bcswap_prepare()
   call bc(0)
+  call bcswap_prepare()
   call prims_int()
   call euler_i(0+iorder/2,nx-iorder/2)
   call bcswap()
