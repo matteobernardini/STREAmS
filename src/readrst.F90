@@ -39,7 +39,6 @@ subroutine readrst
    iermpi = rename_wrapper(oldname, newname)
    if (iermpi /= 0) write(error_unit,*) "Warning! Cannot rename file finaltime.dat to finaltime.bak"
   endif
-  call mpi_barrier(mpi_comm_world, iermpi)
  endif
 !
  sizes(1) = nblocks(1)*nx
