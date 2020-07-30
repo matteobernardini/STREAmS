@@ -20,8 +20,6 @@ module mod_streams
 #endif
 !
  integer, parameter :: nv      =  5   ! Physical variables
- integer, parameter :: ng      =  2   ! Number of ghost nodes
- integer, parameter :: ngdf    =  2   ! Number of ghost nodes for digital filtering
  integer, parameter :: nsmoo   = 10   ! Number of smoothing iterations for wall-normal mesh
  integer, parameter :: nvmean  = 20
  integer, parameter :: nsolmax = 999999
@@ -37,7 +35,7 @@ module mod_streams
 !
  integer, dimension(:), allocatable :: ncoords
  integer :: mp_cart,mp_cartx,mp_carty,mp_cartz
- integer :: nrank,nproc
+ integer :: nrank,nproc,nrank_x, nrank_y, nrank_z
  integer :: ileftx,irightx,ilefty,irighty,ileftz,irightz
  integer :: iermpi, iercuda
 !
@@ -47,6 +45,9 @@ module mod_streams
  integer :: nx
  integer :: ny
  integer :: nz
+ integer :: ng   ! Number of ghost nodes
+ integer :: ngdf ! Number of ghost nodes for digital filtering
+ integer :: io_type
 !
  integer :: enable_plot3d, enable_vtk
 !
@@ -67,13 +68,16 @@ module mod_streams
  integer :: idiski, ndim
  integer :: istore, istore_restart 
  integer :: iorder,iweno
+ integer :: visc_type
  real(mykind) :: tresduc
  real(mykind), dimension(:,:), allocatable :: dcoe
  real(mykind), dimension(:,:), allocatable :: dcoe_gpu
  real(mykind), dimension(:), allocatable  :: winf,winf1
  real(mykind), dimension(:), allocatable  :: winf_gpu,winf1_gpu
  real(mykind) :: rho0,t0,p0,u0,v0,w0,s0
+ real(mykind) :: dftscaling
  real(mykind) :: ximp,thetas,deflec,tanhsfac,xsh
+ real(mykind) :: pgradf
  integer :: ivis
  logical :: masterproc
  logical :: dfupdated
@@ -83,7 +87,13 @@ module mod_streams
 !
 ! Vector of conservative variables and fluxes
  real(mykind), dimension(:,:,:,:), allocatable :: w,fl,fln
+ real(mykind), dimension(:,:,:,:), allocatable :: w_order
  real(mykind), dimension(:,:,:,:), allocatable :: w_gpu,fl_gpu,fln_gpu
+
+ real(mykind), dimension(:,:,:,:), allocatable :: fhat_trans_gpu, fl_trans_gpu
+ real(mykind), dimension(:,:,:,:), allocatable :: wv_gpu, wv_trans_gpu
+ real(mykind), dimension(:,:,:), allocatable :: temperature_trans_gpu
+
  real(mykind), dimension(:,:,:), allocatable :: temperature
  real(mykind), dimension(:,:,:), allocatable :: temperature_gpu
  logical, dimension(:,:,:), allocatable :: ducros,ducros_gpu
@@ -116,7 +126,7 @@ module mod_streams
 ! BC data
  integer, dimension(:), allocatable :: ibc,ibcnr
  integer, dimension(:), allocatable :: ibcnr_gpu
- integer, parameter :: nfmax = 32
+ integer, parameter :: nfmax = 64
  integer :: rand_start 
  real(mykind), dimension(3) :: xlen_df
  real(mykind), dimension(:,:,:), allocatable :: vf_df,vf_df_gpu
@@ -155,9 +165,27 @@ module mod_streams
  logical, dimension(:,:,:), allocatable :: ducbuf1s, ducbuf2s, ducbuf3s, ducbuf4s, ducbuf5s, ducbuf6s
  logical, dimension(:,:,:), allocatable :: ducbuf1r, ducbuf2r, ducbuf3r, ducbuf4r, ducbuf5r, ducbuf6r
 
+ real(mykind),dimension(:,:), allocatable :: wallpfield,wallpfield_gpu
+ real(mykind),dimension(:,:,:), allocatable :: slicexy,slicexy_gpu
  real(mykind),dimension(:,:,:,:), allocatable :: fhat,fhat_gpu
 
+ real(mykind), allocatable, dimension(:,:,:) :: vf_df_old
+ real(mykind), allocatable, dimension(:,:,:) :: uf
+ real(mykind), allocatable, dimension(:,:) :: evmax_mat_yz
+ real(mykind), allocatable, dimension(:) :: evmax_mat_y
+ real(mykind), allocatable, dimension(:) :: bulk5g_gpu
+ real(mykind), allocatable, dimension(:,:) :: rtrms_ib_gpu
+ real(mykind), allocatable, dimension(:) :: rtrms_ib_1d_gpu
+!
+ real(mykind), dimension(:,:,:,:), allocatable :: gplus_x,gminus_x
+ real(mykind), dimension(:,:,:,:), allocatable :: gplus_y,gminus_y
+ real(mykind), dimension(:,:,:,:), allocatable :: gplus_z,gminus_z
+!
 #ifdef USE_CUDA
+ attributes(device) :: fhat_trans_gpu, fl_trans_gpu
+ attributes(device) :: temperature_trans_gpu
+ attributes(device) :: wv_gpu, wv_trans_gpu
+
  integer :: local_comm, mydev
  attributes(device) :: w_gpu,fl_gpu,fln_gpu
  attributes(device) :: temperature_gpu,ducros_gpu
@@ -193,6 +221,16 @@ module mod_streams
  attributes(pinned) :: ducbuf1r, ducbuf2r, ducbuf3r, ducbuf4r, ducbuf5r, ducbuf6r
 
  integer(kind=cuda_stream_kind) :: stream1, stream2
+ attributes(device) :: vf_df_old,uf
+ attributes(device) :: evmax_mat_yz,evmax_mat_y
+ attributes(device) :: bulk5g_gpu
+ attributes(device) :: rtrms_ib_gpu,rtrms_ib_1d_gpu
+ attributes(device) :: wallpfield_gpu
+ attributes(device) :: slicexy_gpu
+
+ attributes(device) :: gplus_x, gminus_x
+ attributes(device) :: gplus_y, gminus_y
+ attributes(device) :: gplus_z, gminus_z
 #endif
 
 end module mod_streams

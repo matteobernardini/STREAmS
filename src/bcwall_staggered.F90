@@ -15,21 +15,21 @@ subroutine bcwall_staggered(ilat)
   do k=1,nz
    do i=1,nx
     do l=1,ng
-     rho  = w_gpu(1,i,l,k)
-     uu   = w_gpu(2,i,l,k)/w_gpu(1,i,l,k)
-     vv   = w_gpu(3,i,l,k)/w_gpu(1,i,l,k)
-     ww   = w_gpu(4,i,l,k)/w_gpu(1,i,l,k)
-     rhoe = w_gpu(5,i,l,k)
+     rho  = w_gpu(i,l,k,1)
+     uu   = w_gpu(i,l,k,2)/w_gpu(i,l,k,1)
+     vv   = w_gpu(i,l,k,3)/w_gpu(i,l,k,1)
+     ww   = w_gpu(i,l,k,4)/w_gpu(i,l,k,1)
+     rhoe = w_gpu(i,l,k,5)
      qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
      pp   = gm1*(rhoe-rho*qq)
      tt   = pp/rho
      tt   = 2._mykind*t0-tt
      rho  = pp/tt
-     w_gpu(1,i,1-l,k) =  rho
-     w_gpu(2,i,1-l,k) = -rho*uu
-     w_gpu(3,i,1-l,k) = -rho*vv
-     w_gpu(4,i,1-l,k) = -rho*ww
-     w_gpu(5,i,1-l,k) =  pp*gm+qq*rho
+     w_gpu(i,1-l,k,1) =  rho
+     w_gpu(i,1-l,k,2) = -rho*uu
+     w_gpu(i,1-l,k,3) = -rho*vv
+     w_gpu(i,1-l,k,4) = -rho*ww
+     w_gpu(i,1-l,k,5) =  pp*gm+qq*rho
     enddo
    enddo
   enddo
@@ -39,21 +39,21 @@ subroutine bcwall_staggered(ilat)
   do k=1,nz
    do i=1,nx
     do l=1,ng
-     rho  = w_gpu(1,i,ny+1-l,k)
-     uu   = w_gpu(2,i,ny+1-l,k)/w_gpu(1,i,ny+1-l,k)
-     vv   = w_gpu(3,i,ny+1-l,k)/w_gpu(1,i,ny+1-l,k)
-     ww   = w_gpu(4,i,ny+1-l,k)/w_gpu(1,i,ny+1-l,k)
-     rhoe = w_gpu(5,i,ny+1-l,k)
+     rho  = w_gpu(i,ny+1-l,k,1)
+     uu   = w_gpu(i,ny+1-l,k,2)/w_gpu(i,ny+1-l,k,1)
+     vv   = w_gpu(i,ny+1-l,k,3)/w_gpu(i,ny+1-l,k,1)
+     ww   = w_gpu(i,ny+1-l,k,4)/w_gpu(i,ny+1-l,k,1)
+     rhoe = w_gpu(i,ny+1-l,k,5)
      qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
      pp   = gm1*(rhoe-rho*qq)
      tt   = pp/rho
      tt   = 2._mykind*t0-tt
      rho  = pp/tt
-     w_gpu(1,i,ny+l,k) =  rho
-     w_gpu(2,i,ny+l,k) = -rho*uu
-     w_gpu(3,i,ny+l,k) = -rho*vv
-     w_gpu(4,i,ny+l,k) = -rho*ww
-     w_gpu(5,i,ny+l,k) =  pp*gm+qq*rho
+     w_gpu(i,ny+l,k,1) =  rho
+     w_gpu(i,ny+l,k,2) = -rho*uu
+     w_gpu(i,ny+l,k,3) = -rho*vv
+     w_gpu(i,ny+l,k,4) = -rho*ww
+     w_gpu(i,ny+l,k,5) =  pp*gm+qq*rho
     enddo
    enddo
   enddo

@@ -14,37 +14,40 @@
 !=============================================================
 
  iflow 
-   0   
+   1   
 
- rlx  rly  rlz 
-  6.  1.    3.
+  rlx           rly         rlz 
+   50.          15.          6.
  
  nxmax  nymax  nzmax
- 128    128    128
+  2048   384    400
  
  nymaxwr   rlywr    dyp_target  
-   181      2.2        .8
+  256       2.2        .8
+
+ ng    ivis  iorder  iweno
+  3     6      6       3
  
  nblocks(1)  nblocks(3)
-   2           1
+    8          1
 
- tresduc  ximp  deflec 
-  1.05     40.    8.  
+ tresduc  ximp  deflec pgradf 
+  0.1      50.     8.    0.
       
- idiski ncyc   cfl  nstep nprint
-   0    100000   0.9   100    1     
+ idiski   ncyc   cfl    nstep   nprint   io_type
+   0     50000   .75     1       10        2
       
- rm      re (friction)  twall/taw
-  1.5    200.           1.
+ rm      re (friction)  twall/taw   visc_type   s2tinf  dftscaling
+ 5.86      375.          0.76          2           0.        0.25
   
  istat  nstat
-   50      8
+  250      9
 
  xstat
-  20. 30. 40. 50. 60. 70. 80. 87.
+   10. 20. 25. 30. 35. 40. 45. 50. 55.
  
- dtsave dtsave_restart   plot3d  vtk
-   5.       5.             1      1
+ dtsave dtsave_restart  enable_plot3d   enable_vtk
+  50.       50.                1            1
 
   irand
-   1
+   -1

@@ -18,7 +18,6 @@ subroutine initurb
  real(mykind) :: ufluc,uu,uumean
  real(mykind) :: vfluc,vv,vvmean
  real(mykind) :: wfluc,ww,wwmean
- real(mykind) :: rubfac
 !
  nx_1 = nxmax/nblocks(1)
  nx_3 = nxmax/nblocks(3)
@@ -175,7 +174,6 @@ subroutine initurb
   enddo
  enddo
 !
- rubfac = .75_mykind
  do k=1,nz
   do j=1,ny
    do i=1-ngdf,nx+ngdf
@@ -191,7 +189,7 @@ subroutine initurb
     tfluc   = -gm1/gamma*ufluc*uumean/tmean
 !   rmloc   = uumean/sqrt(gamma*tmean)
 !   tfluc   = (-gm1*rmloc**2)*ufluc/uumean ! equal to the previous but divergent at j==1
-    tfluc   = tfluc*rubfac
+    tfluc   = tfluc*dftscaling
     tt      = tmean*(1._mykind+tfluc)
     rho     = p0/tt
     uu      = uumean+ufluc

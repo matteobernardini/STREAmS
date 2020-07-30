@@ -5,15 +5,8 @@ subroutine bcdf(ilat)
  use mod_streams
  implicit none
 !
- real(mykind), dimension(3,ny,nz) :: vf_df_old
- real(mykind), dimension(3,ny,nz) :: uf
-!
-#ifdef USE_CUDA
- attributes(device) :: vf_df_old,uf
-#endif
-!
  integer :: ind,i,j,k,l,m,jj,kk,ll,kb,kg,ilat
- real(mykind) :: avrf,avrf2,rubfac,dwdxfac,rho,rhofac,rhold,rhomean
+ real(mykind) :: avrf,avrf2,dwdxfac,rho,rhofac,rhold,rhomean
  real(mykind) :: rhouu,rhovv,rhoww,rhowall,rmsrf,tfluc,tlen,tmean,tt,vfrms
  real(mykind) :: uu,ufluc,uumean
  real(mykind) :: vv,vfluc,vvmean
@@ -50,8 +43,8 @@ subroutine bcdf(ilat)
  !$cuf kernel do(2) <<<*,*>>>
  do k=1-nfmax,nz+nfmax
   do j=1,ny
-   do jj=-nfmax,nfmax
-    do m=1,3
+   do m=1,3
+    do jj=-nfmax,nfmax
      rfy_gpu(m,j,k) = rfy_gpu(m,j,k)+by_df_gpu(m,j,jj)*rf_gpu(m,j+jj,k)
     enddo
    enddo
@@ -64,8 +57,8 @@ subroutine bcdf(ilat)
  !$cuf kernel do(2) <<<*,*>>>
  do k=1,nz
   do j=1,ny
-   do kk=-nfmax,nfmax
-    do m=1,3
+   do m=1,3
+    do kk=-nfmax,nfmax
      vf_df_gpu(m,j,k) = vf_df_gpu(m,j,k)+bz_df_gpu(m,j,kk)*rfy_gpu(m,j,k+kk)
     enddo
    enddo
@@ -134,7 +127,6 @@ subroutine bcdf(ilat)
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
 !
- rubfac = .75_mykind
  if (ilat==1) then     ! left side
   !$cuf kernel do(2) <<<*,*>>>
   do k=1,nz
@@ -146,7 +138,7 @@ subroutine bcdf(ilat)
 ! Interpolate to apply Taylor hypothesis
 !
      do m=1,nv
-      w_gpu(m,1-i,j,k) = w_gpu(m,1-i,j,k)-dwdxfac*(w_gpu(m,1-i,j,k)-w_gpu(m,-i,j,k))
+      w_gpu(1-i,j,k,m) = w_gpu(1-i,j,k,m)-dwdxfac*(w_gpu(1-i,j,k,m)-w_gpu(-i,j,k,m))
      enddo        
 !
     enddo
@@ -160,7 +152,7 @@ subroutine bcdf(ilat)
      vfluc   = uf(2,j,k)*u0
      wfluc   = uf(3,j,k)*u0
      tfluc   = -gm1/gamma*ufluc*uumean/tmean
-     tfluc   = tfluc*rubfac
+     tfluc   = tfluc*dftscaling
      tt      = tmean*(1._mykind+tfluc)
      rho     = p0/tt
      uu      = uumean +ufluc
@@ -169,11 +161,11 @@ subroutine bcdf(ilat)
      rhouu   = rho*uu
      rhovv   = rho*vv
      rhoww   = rho*ww
-     w_gpu(1,1-i,j,k) = rho
-     w_gpu(2,1-i,j,k) = rhouu
-     w_gpu(3,1-i,j,k) = rhovv
-     w_gpu(4,1-i,j,k) = rhoww
-     w_gpu(5,1-i,j,k) = p0*gm + 0.5_mykind*(rhouu**2+ rhovv**2+ rhoww**2)/rho
+     w_gpu(1-i,j,k,1) = rho
+     w_gpu(1-i,j,k,2) = rhouu
+     w_gpu(1-i,j,k,3) = rhovv
+     w_gpu(1-i,j,k,4) = rhoww
+     w_gpu(1-i,j,k,5) = p0*gm + 0.5_mykind*(rhouu**2+ rhovv**2+ rhoww**2)/rho
     enddo
    enddo
   enddo

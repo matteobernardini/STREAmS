@@ -13,7 +13,7 @@ subroutine bcextr(ilat)
    do j=1,ny
     do l=1,ng
      do m=1,nv
-      w_gpu(m,1-l,j,k) = w_gpu(m,1,j,k)
+      w_gpu(1-l,j,k,m) = w_gpu(1,j,k,m)
      enddo
     enddo
    enddo
@@ -25,7 +25,7 @@ subroutine bcextr(ilat)
    do j=1,ny
     do l=1,ng
      do m=1,nv
-      w_gpu(m,nx+l,j,k) = w_gpu(m,nx,j,k)
+      w_gpu(nx+l,j,k,m) = w_gpu(nx,j,k,m)
      enddo
     enddo
    enddo
@@ -37,7 +37,7 @@ subroutine bcextr(ilat)
    do i=1,nx
     do l=1,ng
      do m=1,nv
-      w_gpu(m,i,1-l,k) = w_gpu(m,i,1,k)
+      w_gpu(i,1-l,k,m) = w_gpu(i,1,k,m)
      enddo
     enddo
    enddo
@@ -49,7 +49,7 @@ subroutine bcextr(ilat)
    do i=1,nx
     do l=1,ng
      do m=1,nv
-      w_gpu(m,i,ny+l,k) = w_gpu(m,i,ny,k)
+      w_gpu(i,ny+l,k,m) = w_gpu(i,ny,k,m)
      enddo
     enddo
    enddo
@@ -61,7 +61,7 @@ subroutine bcextr(ilat)
    do i=1,nx
     do l=1,ng
      do m=1,nv
-      w_gpu(m,i,j,1-l) = w_gpu(m,i,j,1)
+      w_gpu(i,j,1-l,m) = w_gpu(i,j,1,m)
      enddo
     enddo
    enddo
@@ -73,7 +73,7 @@ subroutine bcextr(ilat)
    do i=1,nx
     do l=1,ng
      do m=1,nv
-      w_gpu(m,i,j,nz+l) = w_gpu(m,i,j,nz)
+      w_gpu(i,j,nz+l,m) = w_gpu(i,j,nz,m)
      enddo
     enddo
    enddo

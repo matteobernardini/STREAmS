@@ -16,13 +16,15 @@ subroutine constants
  write(chz,1003) ncoords(3)
  1003 format(I3.3)
 !
- tinf     = 273.15_mykind
- s2tinf   = 110.4_mykind/tinf
+ if (s2tinf==0._mykind) then
+  tinf     = 300._mykind/(1._mykind+0.5*gm1*rm*rm)
+  s2tinf   = 110.4_mykind/tinf
+ endif
 !
  if (iflow==-1) then ! wind tunnel
   reout = retauinflow 
  elseif (iflow==0) then
-  call get_reynolds_channel(ny/2,y(1:ny/2),retauinflow,rm,trat,s2tinf,reout)
+  call get_reynolds_channel(ny/2,y(1:ny/2),yn(1:ny/2+1),retauinflow,rm,trat,s2tinf,reout)
   if (masterproc) write(*,*) 'Re bulk (based on half channel) = ', reout
  else
   call get_reynolds(ny,y(1:ny),retauinflow,rm,trat,s2tinf,reout)

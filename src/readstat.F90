@@ -87,3 +87,34 @@ subroutine readstat1d
  call mpi_barrier(mpi_comm_world, iermpi)
 !
 end subroutine readstat1d
+!
+subroutine readstat2d_serial
+!
+! Reading file wavplot.dat
+!
+ use mod_streams
+ implicit none
+!
+ integer :: i,j,l
+ real(mykind) :: xx,yy
+!
+ if (ncoords(3)==0) then
+
+  open(unit=12,file='wavplot0_'//chx//'_'//chy//'.dat',form='formatted')
+  read(12,*)
+  do j=1,ny
+   do i=1,nx
+    read(12,*) xx,yy,(w_av(l,i,j),l=1,nvmean)
+   enddo
+  enddo
+  close(12)
+
+! open(unit=12,file='wavplot_'//chx//'_'//chy//'.bin',form='unformatted')
+! read(12) w_av
+! close(12)
+
+ endif
+!
+ call mpi_bcast(w_av,nvmean*nx*ny,mpi_prec,0,mp_cartz,iermpi)
+!
+end subroutine readstat2d_serial

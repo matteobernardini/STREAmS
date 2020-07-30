@@ -7,38 +7,38 @@ subroutine bcswap_prepare
 !
  integer :: i,j,k,m
 !
- !$cuf kernel do(2) <<<*,*>>>
+ !$cuf kernel do(3) <<<*,*>>>
  do k=1,nz
   do j=1,ny
    do i=1,ng
     do m=1,nv
-     wbuf1s_gpu(m,i,j,k) = w_gpu(m,i,j,k)
-     wbuf2s_gpu(m,i,j,k) = w_gpu(m,nx-ng+i,j,k)
+     wbuf1s_gpu(i,j,k,m) = w_gpu(i,j,k,m)
+     wbuf2s_gpu(i,j,k,m) = w_gpu(nx-ng+i,j,k,m)
     enddo
    enddo
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
- !$cuf kernel do(2) <<<*,*>>>
+ !$cuf kernel do(3) <<<*,*>>>
  do k=1,nz
   do j=1,ng
    do i=1,nx
     do m=1,nv
-     wbuf3s_gpu(m,i,j,k) = w_gpu(m,i,ny-ng+j,k)
-     wbuf4s_gpu(m,i,j,k) = w_gpu(m,i,j,k)
+     wbuf3s_gpu(i,j,k,m) = w_gpu(i,ny-ng+j,k,m)
+     wbuf4s_gpu(i,j,k,m) = w_gpu(i,j,k,m)
     enddo
    enddo
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
  if (ndim==3) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,ng
    do j=1,ny
     do i=1,nx
      do m=1,nv
-      wbuf5s_gpu(m,i,j,k) = w_gpu(m,i,j,k)
-      wbuf6s_gpu(m,i,j,k) = w_gpu(m,i,j,nz-ng+k)
+      wbuf5s_gpu(i,j,k,m) = w_gpu(i,j,k,m)
+      wbuf6s_gpu(i,j,k,m) = w_gpu(i,j,nz-ng+k,m)
      enddo
     enddo
    enddo
@@ -57,6 +57,8 @@ subroutine bcswap
 !
  integer :: i,j,k,m
  integer :: indx,indy,indz
+ integer, parameter :: n_repeat=1
+ integer :: i_repeat
 !
  indx = nv*ng*ny*nz
  indy = nv*nx*ng*nz
@@ -90,23 +92,42 @@ subroutine bcswap
  !wbuf1r_gpu = wbuf1r ; wbuf2r_gpu = wbuf2r ; wbuf3r_gpu = wbuf3r
  !wbuf4r_gpu = wbuf4r ; wbuf5r_gpu = wbuf5r ; wbuf6r_gpu = wbuf6r
 #else
- call mpi_sendrecv(wbuf1s_gpu,indx,mpi_prec,ileftx ,1,wbuf2r_gpu,indx,mpi_prec,irightx,1,mp_cartx,istatus,iermpi)       
- call mpi_sendrecv(wbuf2s_gpu,indx,mpi_prec,irightx,2,wbuf1r_gpu,indx,mpi_prec,ileftx ,2,mp_cartx,istatus,iermpi)       
- call mpi_sendrecv(wbuf3s_gpu,indy,mpi_prec,ilefty ,3,wbuf4r_gpu,indy,mpi_prec,irighty,3,mp_carty,istatus,iermpi)       
- call mpi_sendrecv(wbuf4s_gpu,indy,mpi_prec,irighty,4,wbuf3r_gpu,indy,mpi_prec,ilefty ,4,mp_carty,istatus,iermpi)       
+ ! http://developer.download.nvidia.com/compute/cuda/2_3/toolkit/docs/online/group__CUDART__MEMORY_ge4366f68c6fa8c85141448f187d2aa13.html
+ ! IMPORTANT NOTE: Copies with kind == cudaMemcpyDeviceToDevice are asynchronous
+ ! with respect to the host, but never overlap with kernel execution
+ ! For this reason here simple copies are used and not cudaMemcpyAsync D2D
+ if(ileftx == nrank_x) then
+     wbuf2r_gpu = wbuf1s_gpu
+     wbuf1r_gpu = wbuf2s_gpu
+ else
+     call mpi_sendrecv(wbuf1s_gpu,indx,mpi_prec,ileftx ,1,wbuf2r_gpu,indx,mpi_prec,irightx,1,mp_cartx,istatus,iermpi)       
+     call mpi_sendrecv(wbuf2s_gpu,indx,mpi_prec,irightx,2,wbuf1r_gpu,indx,mpi_prec,ileftx ,2,mp_cartx,istatus,iermpi)       
+ endif
+ if(ilefty == nrank_y) then
+     wbuf4r_gpu = wbuf3s_gpu
+     wbuf3r_gpu = wbuf4s_gpu
+ else
+     call mpi_sendrecv(wbuf3s_gpu,indy,mpi_prec,ilefty ,3,wbuf4r_gpu,indy,mpi_prec,irighty,3,mp_carty,istatus,iermpi)       
+     call mpi_sendrecv(wbuf4s_gpu,indy,mpi_prec,irighty,4,wbuf3r_gpu,indy,mpi_prec,ilefty ,4,mp_carty,istatus,iermpi)       
+ endif
  if (ndim==3) then
-   call mpi_sendrecv(wbuf5s_gpu,indz,mpi_prec,ileftz ,5,wbuf6r_gpu,indz,mpi_prec,irightz,5,mp_cartz,istatus,iermpi)       
-   call mpi_sendrecv(wbuf6s_gpu,indz,mpi_prec,irightz,6,wbuf5r_gpu,indz,mpi_prec,ileftz ,6,mp_cartz,istatus,iermpi)       
+   if(ileftz == nrank_z) then
+        wbuf6r_gpu = wbuf5s_gpu
+        wbuf5r_gpu = wbuf6s_gpu
+   else
+       call mpi_sendrecv(wbuf5s_gpu,indz,mpi_prec,ileftz ,5,wbuf6r_gpu,indz,mpi_prec,irightz,5,mp_cartz,istatus,iermpi)       
+       call mpi_sendrecv(wbuf6s_gpu,indz,mpi_prec,irightz,6,wbuf5r_gpu,indz,mpi_prec,ileftz ,6,mp_cartz,istatus,iermpi)       
+   endif
  endif
 #endif
 !
  if (ileftx/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ny
     do i=1,ng
      do m=1,nv
-      w_gpu(m,i-ng,j,k) = wbuf1r_gpu(m,i,j,k)
+      w_gpu(i-ng,j,k,m) = wbuf1r_gpu(i,j,k,m)
      enddo
     enddo
    enddo
@@ -114,12 +135,12 @@ subroutine bcswap
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (irightx/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ny
     do i=1,ng
      do m=1,nv
-      w_gpu(m,nx+i,j,k) = wbuf2r_gpu(m,i,j,k)
+      w_gpu(nx+i,j,k,m) = wbuf2r_gpu(i,j,k,m)
      enddo
     enddo
    enddo
@@ -127,12 +148,12 @@ subroutine bcswap
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (ilefty/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ng
     do i=1,nx
      do m=1,nv
-      w_gpu(m,i,j-ng,k) = wbuf3r_gpu(m,i,j,k)
+      w_gpu(i,j-ng,k,m) = wbuf3r_gpu(i,j,k,m)
      enddo
     enddo
    enddo
@@ -140,12 +161,12 @@ subroutine bcswap
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (irighty/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ng
     do i=1,nx
      do m=1,nv
-      w_gpu(m,i,ny+j,k) = wbuf4r_gpu(m,i,j,k)
+      w_gpu(i,ny+j,k,m) = wbuf4r_gpu(i,j,k,m)
      enddo
     enddo
    enddo
@@ -153,13 +174,13 @@ subroutine bcswap
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (ndim==3) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,ng
    do j=1,ny
     do i=1,nx
      do m=1,nv
-      w_gpu(m,i,j,k-ng) = wbuf5r_gpu(m,i,j,k)
-      w_gpu(m,i,j,nz+k) = wbuf6r_gpu(m,i,j,k)
+      w_gpu(i,j,k-ng,m) = wbuf5r_gpu(i,j,k,m)
+      w_gpu(i,j,nz+k,m) = wbuf6r_gpu(i,j,k,m)
      enddo
     enddo
    enddo
@@ -179,32 +200,32 @@ subroutine bcswapdiv_prepare
  integer :: i,j,k,m
 !
  !$cuf kernel do(2) <<<*,*>>>
- do k=1,nz
-  do j=1,ny
-   do i=1,ng
-    divbuf1s_gpu(i,j,k) = fhat_gpu(6,i,j,k)
-    divbuf2s_gpu(i,j,k) = fhat_gpu(6,nx-ng+i,j,k)
+ do j=1,ny
+  do i=1,ng
+   do k=1,nz
+    divbuf1s_gpu(i,j,k) = fhat_gpu(i,j,k,6)
+    divbuf2s_gpu(i,j,k) = fhat_gpu(nx-ng+i,j,k,6)
    enddo
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
  !$cuf kernel do(2) <<<*,*>>>
- do k=1,nz
-  do j=1,ng
-   do i=1,nx
-    divbuf3s_gpu(i,j,k) = fhat_gpu(6,i,ny-ng+j,k)
-    divbuf4s_gpu(i,j,k) = fhat_gpu(6,i,j,k)
+ do j=1,ng
+  do i=1,nx
+   do k=1,nz
+    divbuf3s_gpu(i,j,k) = fhat_gpu(i,ny-ng+j,k,6)
+    divbuf4s_gpu(i,j,k) = fhat_gpu(i,j,k,6)
    enddo
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
  if (ndim==3) then
   !$cuf kernel do(2) <<<*,*>>>
-  do k=1,ng
-   do j=1,ny
-    do i=1,nx
-     divbuf5s_gpu(i,j,k) = fhat_gpu(6,i,j,k)
-     divbuf6s_gpu(i,j,k) = fhat_gpu(6,i,j,nz-ng+k)
+  do j=1,ny
+   do i=1,nx
+    do k=1,ng
+     divbuf5s_gpu(i,j,k) = fhat_gpu(i,j,k,6)
+     divbuf6s_gpu(i,j,k) = fhat_gpu(i,j,nz-ng+k,6)
     enddo
    enddo
   enddo
@@ -222,6 +243,8 @@ subroutine bcswapdiv
 !
  integer :: i,j,k,m
  integer :: indx,indy,indz
+ integer, parameter :: n_repeat=1
+ integer :: i_repeat
 !
  indx = ng*ny*nz
  indy = nx*ng*nz
@@ -255,13 +278,28 @@ subroutine bcswapdiv
  !divbuf1r_gpu = divbuf1r ; divbuf2r_gpu = divbuf2r ; divbuf3r_gpu = divbuf3r
  !divbuf4r_gpu = divbuf4r ; divbuf5r_gpu = divbuf5r ; divbuf6r_gpu = divbuf6r
 #else
- call mpi_sendrecv(divbuf1s_gpu,indx,mpi_prec,ileftx ,1,divbuf2r_gpu,indx,mpi_prec,irightx,1,mp_cartx,istatus,iermpi)       
- call mpi_sendrecv(divbuf2s_gpu,indx,mpi_prec,irightx,2,divbuf1r_gpu,indx,mpi_prec,ileftx ,2,mp_cartx,istatus,iermpi)       
- call mpi_sendrecv(divbuf3s_gpu,indy,mpi_prec,ilefty ,3,divbuf4r_gpu,indy,mpi_prec,irighty,3,mp_carty,istatus,iermpi)       
- call mpi_sendrecv(divbuf4s_gpu,indy,mpi_prec,irighty,4,divbuf3r_gpu,indy,mpi_prec,ilefty ,4,mp_carty,istatus,iermpi)       
+ if(ileftx == nrank_x) then
+  divbuf2r_gpu = divbuf1s_gpu
+  divbuf1r_gpu = divbuf2s_gpu
+ else
+  call mpi_sendrecv(divbuf1s_gpu,indx,mpi_prec,ileftx ,1,divbuf2r_gpu,indx,mpi_prec,irightx,1,mp_cartx,istatus,iermpi)       
+  call mpi_sendrecv(divbuf2s_gpu,indx,mpi_prec,irightx,2,divbuf1r_gpu,indx,mpi_prec,ileftx ,2,mp_cartx,istatus,iermpi)       
+ endif
+ if(ilefty == nrank_y) then
+  divbuf4r_gpu = divbuf3s_gpu
+  divbuf3r_gpu = divbuf4s_gpu
+ else
+  call mpi_sendrecv(divbuf3s_gpu,indy,mpi_prec,ilefty ,3,divbuf4r_gpu,indy,mpi_prec,irighty,3,mp_carty,istatus,iermpi)       
+  call mpi_sendrecv(divbuf4s_gpu,indy,mpi_prec,irighty,4,divbuf3r_gpu,indy,mpi_prec,ilefty ,4,mp_carty,istatus,iermpi)       
+ endif
  if (ndim==3) then
-  call mpi_sendrecv(divbuf5s_gpu,indz,mpi_prec,ileftz ,5,divbuf6r_gpu,indz,mpi_prec,irightz,5,mp_cartz,istatus,iermpi)       
-  call mpi_sendrecv(divbuf6s_gpu,indz,mpi_prec,irightz,6,divbuf5r_gpu,indz,mpi_prec,ileftz ,6,mp_cartz,istatus,iermpi)       
+  if(ileftz == nrank_z) then
+   divbuf6r_gpu = divbuf5s_gpu
+   divbuf5r_gpu = divbuf6s_gpu
+  else
+   call mpi_sendrecv(divbuf5s_gpu,indz,mpi_prec,ileftz ,5,divbuf6r_gpu,indz,mpi_prec,irightz,5,mp_cartz,istatus,iermpi)       
+   call mpi_sendrecv(divbuf6s_gpu,indz,mpi_prec,irightz,6,divbuf5r_gpu,indz,mpi_prec,ileftz ,6,mp_cartz,istatus,iermpi)       
+  endif
  endif
 #endif
 !
@@ -270,17 +308,17 @@ subroutine bcswapdiv
   do k=1,nz
    do j=1,ny
     do i=1,ng
-     fhat_gpu(6,1-i,j,k) = 2._mykind*fhat_gpu(6,2-i,j,k)-fhat_gpu(6,3-i,j,k)
+     fhat_gpu(1-i,j,k,6) = 2._mykind*fhat_gpu(2-i,j,k,6)-fhat_gpu(3-i,j,k,6)
     enddo
    enddo
   enddo
   !@cuf iercuda=cudaDeviceSynchronize()
  else
   !$cuf kernel do(2) <<<*,*>>>
-  do k=1,nz
-   do j=1,ny
-    do i=1,ng
-     fhat_gpu(6,i-ng,j,k) = divbuf1r_gpu(i,j,k)
+  do j=1,ny
+   do i=1,ng
+    do k=1,nz
+     fhat_gpu(i-ng,j,k,6) = divbuf1r_gpu(i,j,k)
     enddo
    enddo
   enddo
@@ -291,17 +329,17 @@ subroutine bcswapdiv
   do k=1,nz
    do j=1,ny
     do i=1,ng
-     fhat_gpu(6,nx+i,j,k) = 2._mykind*fhat_gpu(6,nx+i-1,j,k)-fhat_gpu(6,nx+i-2,j,k)
+     fhat_gpu(nx+i,j,k,6) = 2._mykind*fhat_gpu(nx+i-1,j,k,6)-fhat_gpu(nx+i-2,j,k,6)
     enddo
    enddo
   enddo
   !@cuf iercuda=cudaDeviceSynchronize()
  else
   !$cuf kernel do(2) <<<*,*>>>
-  do k=1,nz
-   do j=1,ny
-    do i=1,ng
-     fhat_gpu(6,nx+i,j,k) = divbuf2r_gpu(i,j,k)
+  do j=1,ny
+   do i=1,ng
+    do k=1,nz
+     fhat_gpu(nx+i,j,k,6) = divbuf2r_gpu(i,j,k)
     enddo
    enddo
   enddo
@@ -312,17 +350,17 @@ subroutine bcswapdiv
   do k=1,nz
    do i=1,nx
     do j=1,ng
-     fhat_gpu(6,i,1-j,k) = 2._mykind*fhat_gpu(6,i,2-j,k)-fhat_gpu(6,i,3-j,k)
+     fhat_gpu(i,1-j,k,6) = 2._mykind*fhat_gpu(i,2-j,k,6)-fhat_gpu(i,3-j,k,6)
     enddo
    enddo
   enddo
   !@cuf iercuda=cudaDeviceSynchronize()
  else
   !$cuf kernel do(2) <<<*,*>>>
-  do k=1,nz
-   do j=1,ng
-    do i=1,nx
-     fhat_gpu(6,i,j-ng,k) = divbuf3r_gpu(i,j,k)
+  do j=1,ng
+   do i=1,nx
+    do k=1,nz
+     fhat_gpu(i,j-ng,k,6) = divbuf3r_gpu(i,j,k)
     enddo
    enddo
   enddo
@@ -333,17 +371,17 @@ subroutine bcswapdiv
   do k=1,nz
    do i=1,nx
     do j=1,ng
-     fhat_gpu(6,i,ny+j,k) = 2._mykind*fhat_gpu(6,i,ny+j-1,k)-fhat_gpu(6,i,ny+j-2,k)
+     fhat_gpu(i,ny+j,k,6) = 2._mykind*fhat_gpu(i,ny+j-1,k,6)-fhat_gpu(i,ny+j-2,k,6)
     enddo
    enddo
   enddo
   !@cuf iercuda=cudaDeviceSynchronize()
  else
   !$cuf kernel do(2) <<<*,*>>>
-  do k=1,nz
-   do j=1,ng
-    do i=1,nx
-     fhat_gpu(6,i,ny+j,k) = divbuf4r_gpu(i,j,k)
+  do j=1,ng
+   do i=1,nx
+    do k=1,nz
+     fhat_gpu(i,ny+j,k,6) = divbuf4r_gpu(i,j,k)
     enddo
    enddo
   enddo
@@ -351,11 +389,11 @@ subroutine bcswapdiv
  endif
  if (ndim==3) then
   !$cuf kernel do(2) <<<*,*>>>
-  do k=1,ng
-   do j=1,ny
-    do i=1,nx
-     fhat_gpu(6,i,j,k-ng) = divbuf5r_gpu(i,j,k)
-     fhat_gpu(6,i,j,nz+k) = divbuf6r_gpu(i,j,k)
+  do j=1,ny
+   do i=1,nx
+    do k=1,ng
+     fhat_gpu(i,j,k-ng,6) = divbuf5r_gpu(i,j,k)
+     fhat_gpu(i,j,nz+k,6) = divbuf6r_gpu(i,j,k)
     enddo
    enddo
   enddo
@@ -373,7 +411,7 @@ subroutine bcswapduc_prepare
 !
  integer :: i,j,k,m
 !
- !$cuf kernel do(2) <<<*,*>>>
+ !$cuf kernel do(3) <<<*,*>>>
  do k=1,nz
   do j=1,ny
    do i=1,ng
@@ -383,7 +421,7 @@ subroutine bcswapduc_prepare
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
- !$cuf kernel do(2) <<<*,*>>>
+ !$cuf kernel do(3) <<<*,*>>>
  do k=1,nz
   do j=1,ng
    do i=1,nx
@@ -394,7 +432,7 @@ subroutine bcswapduc_prepare
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
  if (ndim==3) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,ng
    do j=1,ny
     do i=1,nx
@@ -446,18 +484,33 @@ subroutine bcswapduc
  iermpi = cudaMemcpyAsync(ducbuf6r_gpu, ducbuf6r, indz, cudaMemcpyHostToDevice, stream2)
  iermpi = cudaStreamSynchronize(stream2)
 #else
- call mpi_sendrecv(ducbuf1s_gpu,indx,mpi_logical,ileftx ,1,ducbuf2r_gpu,indx,mpi_logical,irightx,1,mp_cartx,istatus,iermpi)       
- call mpi_sendrecv(ducbuf2s_gpu,indx,mpi_logical,irightx,2,ducbuf1r_gpu,indx,mpi_logical,ileftx ,2,mp_cartx,istatus,iermpi)       
- call mpi_sendrecv(ducbuf3s_gpu,indy,mpi_logical,ilefty ,3,ducbuf4r_gpu,indy,mpi_logical,irighty,3,mp_carty,istatus,iermpi)       
- call mpi_sendrecv(ducbuf4s_gpu,indy,mpi_logical,irighty,4,ducbuf3r_gpu,indy,mpi_logical,ilefty ,4,mp_carty,istatus,iermpi)       
+ if(ileftx == nrank_x) then
+  ducbuf2r_gpu = ducbuf1s_gpu
+  ducbuf1r_gpu = ducbuf2s_gpu
+ else
+  call mpi_sendrecv(ducbuf1s_gpu,indx,mpi_logical,ileftx ,1,ducbuf2r_gpu,indx,mpi_logical,irightx,1,mp_cartx,istatus,iermpi)       
+  call mpi_sendrecv(ducbuf2s_gpu,indx,mpi_logical,irightx,2,ducbuf1r_gpu,indx,mpi_logical,ileftx ,2,mp_cartx,istatus,iermpi)       
+ endif
+ if(ilefty == nrank_y) then
+  ducbuf4r_gpu = ducbuf3s_gpu
+  ducbuf3r_gpu = ducbuf4s_gpu
+ else
+  call mpi_sendrecv(ducbuf3s_gpu,indy,mpi_logical,ilefty ,3,ducbuf4r_gpu,indy,mpi_logical,irighty,3,mp_carty,istatus,iermpi)       
+  call mpi_sendrecv(ducbuf4s_gpu,indy,mpi_logical,irighty,4,ducbuf3r_gpu,indy,mpi_logical,ilefty ,4,mp_carty,istatus,iermpi)       
+ endif
  if (ndim==3) then
-  call mpi_sendrecv(ducbuf5s_gpu,indz,mpi_logical,ileftz ,5,ducbuf6r_gpu,indz,mpi_logical,irightz,5,mp_cartz,istatus,iermpi)       
-  call mpi_sendrecv(ducbuf6s_gpu,indz,mpi_logical,irightz,6,ducbuf5r_gpu,indz,mpi_logical,ileftz ,6,mp_cartz,istatus,iermpi)       
+  if(ileftz == nrank_z) then
+   ducbuf6r_gpu = ducbuf5s_gpu
+   ducbuf5r_gpu = ducbuf6s_gpu
+  else
+   call mpi_sendrecv(ducbuf5s_gpu,indz,mpi_logical,ileftz ,5,ducbuf6r_gpu,indz,mpi_logical,irightz,5,mp_cartz,istatus,iermpi)       
+   call mpi_sendrecv(ducbuf6s_gpu,indz,mpi_logical,irightz,6,ducbuf5r_gpu,indz,mpi_logical,ileftz ,6,mp_cartz,istatus,iermpi)       
+  endif
  endif
 #endif
 !
  if (ileftx/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ny
     do i=1,ng
@@ -468,7 +521,7 @@ subroutine bcswapduc
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (irightx/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ny
     do i=1,ng
@@ -479,7 +532,7 @@ subroutine bcswapduc
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (ilefty/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ng
     do i=1,nx
@@ -490,7 +543,7 @@ subroutine bcswapduc
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (irighty/=mpi_proc_null) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,nz
    do j=1,ng
     do i=1,nx
@@ -501,7 +554,7 @@ subroutine bcswapduc
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (ndim==3) then
-  !$cuf kernel do(2) <<<*,*>>>
+  !$cuf kernel do(3) <<<*,*>>>
   do k=1,ng
    do j=1,ny
     do i=1,nx

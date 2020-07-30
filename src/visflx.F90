@@ -21,20 +21,25 @@ subroutine visflx
  real(mykind) :: vlap,vlapx,vlapy,vlapz
  real(mykind) :: wlap,wlapx,wlapy,wlapz
  real(mykind) :: tlap,tlapx,tlapy,tlapz
+ real(mykind) :: sqgmr2,sqgmr2h,tt2,sqrtt,sdivt,sdivt1
 !
-!sqgmr2  = sqgmr*(1._mykind+s2tinf)
-!sqgmr2h = sqgmr2*0.5_mykind
+ real(mykind) :: ttt,st,et
+!
+ sqgmr2  = sqgmr*(1._mykind+s2tinf)
+ sqgmr2h = sqgmr2*0.5_mykind
 !
 !Update viscous fluxes
 !
+!st = mpi_wtime()
+
  !$cuf kernel do(2) <<<*,*>>>
  do j=1,ny
   do i=1,nx
    do k=1,nz
 !
-    uu = w_gpu(2,i,j,k)/w_gpu(1,i,j,k)
-    vv = w_gpu(3,i,j,k)/w_gpu(1,i,j,k)
-    ww = w_gpu(4,i,j,k)/w_gpu(1,i,j,k)
+    uu = wv_gpu(i,j,k,2)
+    vv = wv_gpu(i,j,k,3)
+    ww = wv_gpu(i,j,k,4)
 !
     ux = 0._mykind
     vx = 0._mykind
@@ -50,19 +55,19 @@ subroutine visflx
     tz = 0._mykind
     do l=1,ivis/2
      ccl = coeff_deriv1_gpu(l)
-     ux = ux+ccl*(w_gpu(2,i+l,j,k)/w_gpu(1,i+l,j,k)-w_gpu(2,i-l,j,k)/w_gpu(1,i-l,j,k))
-     vx = vx+ccl*(w_gpu(3,i+l,j,k)/w_gpu(1,i+l,j,k)-w_gpu(3,i-l,j,k)/w_gpu(1,i-l,j,k))
-     wx = wx+ccl*(w_gpu(4,i+l,j,k)/w_gpu(1,i+l,j,k)-w_gpu(4,i-l,j,k)/w_gpu(1,i-l,j,k))
+     ux = ux+ccl*(wv_gpu(i+l,j,k,2)-wv_gpu(i-l,j,k,2))
+     vx = vx+ccl*(wv_gpu(i+l,j,k,3)-wv_gpu(i-l,j,k,3))
+     wx = wx+ccl*(wv_gpu(i+l,j,k,4)-wv_gpu(i-l,j,k,4))
      tx = tx+ccl*(temperature_gpu(i+l,j,k)-temperature_gpu(i-l,j,k))
 !
-     uy = uy+ccl*(w_gpu(2,i,j+l,k)/w_gpu(1,i,j+l,k)-w_gpu(2,i,j-l,k)/w_gpu(1,i,j-l,k))
-     vy = vy+ccl*(w_gpu(3,i,j+l,k)/w_gpu(1,i,j+l,k)-w_gpu(3,i,j-l,k)/w_gpu(1,i,j-l,k))
-     wy = wy+ccl*(w_gpu(4,i,j+l,k)/w_gpu(1,i,j+l,k)-w_gpu(4,i,j-l,k)/w_gpu(1,i,j-l,k))
+     uy = uy+ccl*(wv_gpu(i,j+l,k,2)-wv_gpu(i,j-l,k,2))
+     vy = vy+ccl*(wv_gpu(i,j+l,k,3)-wv_gpu(i,j-l,k,3))
+     wy = wy+ccl*(wv_gpu(i,j+l,k,4)-wv_gpu(i,j-l,k,4))
      ty = ty+ccl*(temperature_gpu(i,j+l,k)-temperature_gpu(i,j-l,k))
 !
-     uz = uz+ccl*(w_gpu(2,i,j,k+l)/w_gpu(1,i,j,k+l)-w_gpu(2,i,j,k-l)/w_gpu(1,i,j,k-l))
-     vz = vz+ccl*(w_gpu(3,i,j,k+l)/w_gpu(1,i,j,k+l)-w_gpu(3,i,j,k-l)/w_gpu(1,i,j,k-l))
-     wz = wz+ccl*(w_gpu(4,i,j,k+l)/w_gpu(1,i,j,k+l)-w_gpu(4,i,j,k-l)/w_gpu(1,i,j,k-l))
+     uz = uz+ccl*(wv_gpu(i,j,k+l,2)-wv_gpu(i,j,k-l,2))
+     vz = vz+ccl*(wv_gpu(i,j,k+l,3)-wv_gpu(i,j,k-l,3))
+     wz = wz+ccl*(wv_gpu(i,j,k+l,4)-wv_gpu(i,j,k-l,4))
      tz = tz+ccl*(temperature_gpu(i,j,k+l)-temperature_gpu(i,j,k-l))
     enddo
     ux = ux*dcsidx_gpu(i)
@@ -92,15 +97,15 @@ subroutine visflx
     tlapz = tlapx
     do l=1,ivis/2
      clapl = coeff_clap_gpu(l)
-     ulapx = ulapx + clapl*(w_gpu(2,i+l,j,k)/w_gpu(1,i+l,j,k)+w_gpu(2,i-l,j,k)/w_gpu(1,i-l,j,k))
-     ulapy = ulapy + clapl*(w_gpu(2,i,j+l,k)/w_gpu(1,i,j+l,k)+w_gpu(2,i,j-l,k)/w_gpu(1,i,j-l,k))
-     ulapz = ulapz + clapl*(w_gpu(2,i,j,k+l)/w_gpu(1,i,j,k+l)+w_gpu(2,i,j,k-l)/w_gpu(1,i,j,k-l))
-     vlapx = vlapx + clapl*(w_gpu(3,i+l,j,k)/w_gpu(1,i+l,j,k)+w_gpu(3,i-l,j,k)/w_gpu(1,i-l,j,k))
-     vlapy = vlapy + clapl*(w_gpu(3,i,j+l,k)/w_gpu(1,i,j+l,k)+w_gpu(3,i,j-l,k)/w_gpu(1,i,j-l,k))
-     vlapz = vlapz + clapl*(w_gpu(3,i,j,k+l)/w_gpu(1,i,j,k+l)+w_gpu(3,i,j,k-l)/w_gpu(1,i,j,k-l))
-     wlapx = wlapx + clapl*(w_gpu(4,i+l,j,k)/w_gpu(1,i+l,j,k)+w_gpu(4,i-l,j,k)/w_gpu(1,i-l,j,k))
-     wlapy = wlapy + clapl*(w_gpu(4,i,j+l,k)/w_gpu(1,i,j+l,k)+w_gpu(4,i,j-l,k)/w_gpu(1,i,j-l,k))
-     wlapz = wlapz + clapl*(w_gpu(4,i,j,k+l)/w_gpu(1,i,j,k+l)+w_gpu(4,i,j,k-l)/w_gpu(1,i,j,k-l))
+     ulapx = ulapx + clapl*(wv_gpu(i+l,j,k,2)+wv_gpu(i-l,j,k,2))
+     ulapy = ulapy + clapl*(wv_gpu(i,j+l,k,2)+wv_gpu(i,j-l,k,2))
+     ulapz = ulapz + clapl*(wv_gpu(i,j,k+l,2)+wv_gpu(i,j,k-l,2))
+     vlapx = vlapx + clapl*(wv_gpu(i+l,j,k,3)+wv_gpu(i-l,j,k,3))
+     vlapy = vlapy + clapl*(wv_gpu(i,j+l,k,3)+wv_gpu(i,j-l,k,3))
+     vlapz = vlapz + clapl*(wv_gpu(i,j,k+l,3)+wv_gpu(i,j,k-l,3))
+     wlapx = wlapx + clapl*(wv_gpu(i+l,j,k,4)+wv_gpu(i-l,j,k,4))
+     wlapy = wlapy + clapl*(wv_gpu(i,j+l,k,4)+wv_gpu(i,j-l,k,4))
+     wlapz = wlapz + clapl*(wv_gpu(i,j,k+l,4)+wv_gpu(i,j,k-l,4))
      tlapx = tlapx + clapl*(temperature_gpu(i+l,j,k)+temperature_gpu(i-l,j,k))
      tlapy = tlapy + clapl*(temperature_gpu(i,j+l,k)+temperature_gpu(i,j-l,k))
      tlapz = tlapz + clapl*(temperature_gpu(i,j,k+l)+temperature_gpu(i,j,k-l))
@@ -126,17 +131,20 @@ subroutine visflx
 !
     div3l   = ux+vy+wz
     div3l   = div3l/3._mykind
-    fhat_gpu(6,i,j,k) = div3l
+    fhat_gpu(i,j,k,6) = div3l
     tt      = temperature_gpu(i,j,k)
-!   tt2     = tt*tt
-!   sqrtt   = sqrt(tt)
-!   sdivt   = s2tinf/tt
-!   sdivt1  = 1._mykind+sdivt
-!   rmut    = sqgmr2*sqrtt/sdivt1  ! molecular viscosity
-!   drmutdt = sqgmr2h/sqrtt+rmut*s2tinf/tt2
-!   drmutdt = drmutdt/sdivt1
-    rmut    = sqgmr*tt**vtexp
-    drmutdt = rmut*vtexp/tt
+    if (visc_type==1) then
+     rmut    = sqgmr*tt**vtexp
+     drmutdt = rmut*vtexp/tt
+    else
+     tt2     = tt*tt
+     sqrtt   = sqrt(tt)
+     sdivt   = s2tinf/tt
+     sdivt1  = 1._mykind+sdivt
+     rmut    = sqgmr2*sqrtt/sdivt1  ! molecular viscosity
+     drmutdt = sqgmr2h/sqrtt+rmut*s2tinf/tt2
+     drmutdt = drmutdt/sdivt1
+    endif
     rmutx   = drmutdt*tx
     rmuty   = drmutdt*ty
     rmutz   = drmutdt*tz
@@ -153,15 +161,19 @@ subroutine visflx
     sigq = sigx*uu+sigy*vv+sigz*ww+(sig11*ux+sig12*uy+sig13*uz+sig12*vx+sig22*vy+sig23*vz+sig13*wx+sig23*wy+sig33*wz)*rmut+&
           (rmutx*tx+rmuty*ty+rmutz*tz+rmut*tlap)*ggmopr 
 !
-    fl_gpu(2,i,j,k) = fl_gpu(2,i,j,k) - sigx
-    fl_gpu(3,i,j,k) = fl_gpu(3,i,j,k) - sigy
-    fl_gpu(4,i,j,k) = fl_gpu(4,i,j,k) - sigz
-    fl_gpu(5,i,j,k) = fl_gpu(5,i,j,k) - sigq 
+    fl_gpu(i,j,k,2) = fl_gpu(i,j,k,2) - sigx
+    fl_gpu(i,j,k,3) = fl_gpu(i,j,k,3) - sigy
+    fl_gpu(i,j,k,4) = fl_gpu(i,j,k,4) - sigz
+    fl_gpu(i,j,k,5) = fl_gpu(i,j,k,5) - sigq 
 !
    enddo
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
+
+!et = mpi_wtime()
+!ttt = et-st
+!if (masterproc) write(error_unit,*) 'Viscous-I time =', ttt
 !
 end subroutine visflx
 !
@@ -177,20 +189,25 @@ subroutine visflx_div
  real(mykind) :: ri,rmut
  real(mykind) :: sigq,sigx,sigy,sigz,tt
  real(mykind) :: uu,vv,ww
+ real(mykind) :: sqgmr2,sqgmr2h,tt2,sqrtt,sdivt,sdivt1
 !
-!sqgmr2  = sqgmr*(1._mykind+s2tinf)
-!sqgmr2h = sqgmr2*0.5_mykind
+ real(mykind) :: ttt,st,et
+!
+ sqgmr2  = sqgmr*(1._mykind+s2tinf)
+ sqgmr2h = sqgmr2*0.5_mykind
 !
 !Update viscous fluxes
+!
+!st = mpi_wtime()
 !
  !$cuf kernel do(3) <<<*,*,stream=stream1>>>
  do k=1,nz
   do j=1,ny
    do i=1,nx
 !
-    uu = w_gpu(2,i,j,k)/w_gpu(1,i,j,k)
-    vv = w_gpu(3,i,j,k)/w_gpu(1,i,j,k)
-    ww = w_gpu(4,i,j,k)/w_gpu(1,i,j,k)
+    uu = wv_gpu(i,j,k,2)
+    vv = wv_gpu(i,j,k,3)
+    ww = wv_gpu(i,j,k,4)
 !
     divx3l  = 0._mykind
     divy3l  = 0._mykind
@@ -198,28 +215,41 @@ subroutine visflx_div
 !
     do l=1,ivis/2
      ccl = coeff_deriv1_gpu(l)
-     divx3l = divx3l+ccl*(fhat_gpu(6,i+l,j,k)-fhat_gpu(6,i-l,j,k))
-     divy3l = divy3l+ccl*(fhat_gpu(6,i,j+l,k)-fhat_gpu(6,i,j-l,k))
-     divz3l = divz3l+ccl*(fhat_gpu(6,i,j,k+l)-fhat_gpu(6,i,j,k-l))
+     divx3l = divx3l+ccl*(fhat_gpu(i+l,j,k,6)-fhat_gpu(i-l,j,k,6))
+     divy3l = divy3l+ccl*(fhat_gpu(i,j+l,k,6)-fhat_gpu(i,j-l,k,6))
+     divz3l = divz3l+ccl*(fhat_gpu(i,j,k+l,6)-fhat_gpu(i,j,k-l,6))
     enddo
     divx3l = divx3l*dcsidx_gpu(i)
     divy3l = divy3l*detady_gpu(j)
     divz3l = divz3l*dzitdz_gpu(k)
 !
     tt   = temperature_gpu(i,j,k)
-    rmut = sqgmr*tt**vtexp
+    if (visc_type==1) then
+     rmut    = sqgmr*tt**vtexp
+    else
+     tt2     = tt*tt
+     sqrtt   = sqrt(tt)
+     sdivt   = s2tinf/tt
+     sdivt1  = 1._mykind+sdivt
+     rmut    = sqgmr2*sqrtt/sdivt1  ! molecular viscosity
+    endif
     sigx = rmut*divx3l
     sigy = rmut*divy3l
     sigz = rmut*divz3l
     sigq = sigx*uu+sigy*vv+sigz*ww
 !
-    fl_gpu(2,i,j,k) = fl_gpu(2,i,j,k) - sigx
-    fl_gpu(3,i,j,k) = fl_gpu(3,i,j,k) - sigy
-    fl_gpu(4,i,j,k) = fl_gpu(4,i,j,k) - sigz
-    fl_gpu(5,i,j,k) = fl_gpu(5,i,j,k) - sigq 
+    fl_gpu(i,j,k,2) = fl_gpu(i,j,k,2) - sigx
+    fl_gpu(i,j,k,3) = fl_gpu(i,j,k,3) - sigy
+    fl_gpu(i,j,k,4) = fl_gpu(i,j,k,4) - sigz
+    fl_gpu(i,j,k,5) = fl_gpu(i,j,k,5) - sigq 
 !
    enddo
   enddo
  enddo
+
+ !!!!@cuf iercuda=cudaDeviceSynchronize()
+!et = mpi_wtime()
+!ttt = et-st
+!if (masterproc) write(error_unit,*) 'Viscous-II time =', ttt
 !
 end subroutine visflx_div

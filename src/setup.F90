@@ -6,10 +6,10 @@ subroutine setup
  implicit none
 !
 !===================================================
- if (masterproc) write(*,*) 'Allocation of variables'
+ if (masterproc) write(error_unit,*) 'Allocation of variables'
  call allocate_vars()
 !===================================================
- if (masterproc) write(*,*) 'Reading input'
+ if (masterproc) write(error_unit,*) 'Reading input'
  call readinp()
 !===================================================
  if (idiski==0) then

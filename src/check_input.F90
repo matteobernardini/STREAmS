@@ -58,8 +58,8 @@ subroutine check_input(step)
    write(error_unit,*) 'Checking GPU memory allocation'
    write(error_unit,'(A,(3(I0,2x)))') ' GPU accelerated version, grid size:',nxmax, nymax, nzmax
    write(error_unit,'(A,(3(I0,2x)))') ' GPU accelerated version, process grid size:',nx, ny, nz
-   gpu_used_mem = 23._mykind     ! Number of 3D arrays on GPU
-   correction_factor = 0.5_mykind ! Safety margin
+   gpu_used_mem = 43._mykind      ! Number of 3D arrays on GPU
+   correction_factor = 1.5_mykind ! Safety margin
    gpu_used_mem = gpu_used_mem+correction_factor 
    gpu_used_mem = gpu_used_mem*real((nx+2*ng),mykind)*real((ny+2*ng),mykind)*real((nz+2*ng),mykind)
    gpu_used_mem = gpu_used_mem*storage_size(1._mykind)/8._mykind/(1024._mykind**2)
@@ -90,34 +90,36 @@ subroutine check_input(step)
    call warning_input("forcing istat=ncyc to compute final meaningful statistics")
    istat = ncyc
   endif
-  if (idiski >= 1) then
-   inquire(file="rst.bin", exist=file_exists)
-   if (.not.file_exists) then
-    inquire(file="rst.bak", exist=file2_exists)
-    if (.not.file2_exists) then
-     call fail_input("rst.bin or rst.bak file not found")
-    endif
-   endif
-   inquire(file="finaltime.dat", exist=file_exists)
-   if (.not.file_exists) then
-    inquire(file="finaltime.bak", exist=file2_exists)
-    if (.not.file2_exists) then
-     call fail_input("finaltime.dat or finaltime.bak file not found")
-    endif
-   endif
-   if (iflow > 0) then
-    inquire(file="df.bin", exist=file_exists)
+  if(io_type == 2) then
+   if (idiski >= 1) then
+    inquire(file="rst.bin", exist=file_exists)
     if (.not.file_exists) then
-     inquire(file="df.bak", exist=file2_exists)
+     inquire(file="rst.bak", exist=file2_exists)
      if (.not.file2_exists) then
-      call fail_input("df.bin or df.bak file not found")
+      call fail_input("rst.bin or rst.bak file not found")
      endif
     endif
-   endif
-   if (idiski > 1) then
-    inquire(file="stat.bin", exist=file_exists)
+    inquire(file="finaltime.dat", exist=file_exists)
     if (.not.file_exists) then
-     call fail_input("stat.bin file not found")
+     inquire(file="finaltime.bak", exist=file2_exists)
+     if (.not.file2_exists) then
+      call fail_input("finaltime.dat or finaltime.bak file not found")
+     endif
+    endif
+    if (iflow > 0) then
+     inquire(file="df.bin", exist=file_exists)
+     if (.not.file_exists) then
+      inquire(file="df.bak", exist=file2_exists)
+      if (.not.file2_exists) then
+       call fail_input("df.bin or df.bak file not found")
+      endif
+     endif
+    endif
+    if (idiski > 1) then
+     inquire(file="stat.bin", exist=file_exists)
+     if (.not.file_exists) then
+      call fail_input("stat.bin file not found")
+     endif
     endif
    endif
   endif
@@ -131,7 +133,7 @@ subroutine check_input(step)
  if (step == 3) then
   if (iflow == 2) then
    if (xsh < 0._mykind .or. xsh > rlx) then
-    call fail_input("xsh must be in the range [0:rlx]. please fix ximp to ensure that")
+    call fail_input("xsh must be in the range [0:rlx]. Please fix ximp to ensure that")
    endif
   endif
  endif

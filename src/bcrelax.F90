@@ -64,13 +64,13 @@ subroutine bcrelax(ilat)
 !
     i   = nx
 !
-    rho =  w_gpu(1,i,j,k) 
-    ri  =  1._mykind/w_gpu(1,i,j,k)
-    uu  =  w_gpu(2,i,j,k) * ri
-    vv  =  w_gpu(3,i,j,k) * ri
-    ww  =  w_gpu(4,i,j,k) * ri
+    rho =  w_gpu(i,j,k,1) 
+    ri  =  1._mykind/w_gpu(i,j,k,1)
+    uu  =  w_gpu(i,j,k,2) * ri
+    vv  =  w_gpu(i,j,k,3) * ri
+    ww  =  w_gpu(i,j,k,4) * ri
     qq  =  0.5_mykind * (uu*uu  + vv*vv + ww*ww)
-!   pp  =  gm1 * (w_gpu(5,i,j,k) - w_gpu(1,i,j,k) * qq)
+!   pp  =  gm1 * (w_gpu(i,j,k,5) - w_gpu(i,j,k,1) * qq)
     pp  =  rho*temperature_gpu(i,j,k)
     cc  =  gamma * pp * ri
     c   =  sqrt(cc)
@@ -97,9 +97,9 @@ subroutine bcrelax(ilat)
     jac_4_4  =  rho
     jac_4_5  =  0._mykind
     jac_5_1  =  qq
-    jac_5_2  =  w_gpu(2,i,j,k)
-    jac_5_3  =  w_gpu(3,i,j,k)
-    jac_5_4  =  w_gpu(4,i,j,k)
+    jac_5_2  =  w_gpu(i,j,k,2)
+    jac_5_3  =  w_gpu(i,j,k,3)
+    jac_5_4  =  w_gpu(i,j,k,4)
     jac_5_5  =  gm
 !   Jacobian of inverse conservative/primitive transformation (Eqn. (A.5) of Lodato et al, JCP 2008)
     jacinv_1_1 =  1._mykind
@@ -195,25 +195,25 @@ subroutine bcrelax(ilat)
     wloc0_5 = winf_gpu(5)
     l=1
     ll = i + 1 - l
-    wloc1_1 = w_gpu(1,ll,j,k)
-    wloc1_2 = w_gpu(2,ll,j,k)
-    wloc1_3 = w_gpu(3,ll,j,k)
-    wloc1_4 = w_gpu(4,ll,j,k)
-    wloc1_5 = w_gpu(5,ll,j,k)
+    wloc1_1 = w_gpu(ll,j,k,1)
+    wloc1_2 = w_gpu(ll,j,k,2)
+    wloc1_3 = w_gpu(ll,j,k,3)
+    wloc1_4 = w_gpu(ll,j,k,4)
+    wloc1_5 = w_gpu(ll,j,k,5)
     l=2
     ll = i + 1 - l
-    wloc2_1 = w_gpu(1,ll,j,k)
-    wloc2_2 = w_gpu(2,ll,j,k)
-    wloc2_3 = w_gpu(3,ll,j,k)
-    wloc2_4 = w_gpu(4,ll,j,k)
-    wloc2_5 = w_gpu(5,ll,j,k)
+    wloc2_1 = w_gpu(ll,j,k,1)
+    wloc2_2 = w_gpu(ll,j,k,2)
+    wloc2_3 = w_gpu(ll,j,k,3)
+    wloc2_4 = w_gpu(ll,j,k,4)
+    wloc2_5 = w_gpu(ll,j,k,5)
     l=3
     ll = i + 1 - l
-    wloc3_1 = w_gpu(1,ll,j,k)
-    wloc3_2 = w_gpu(2,ll,j,k)
-    wloc3_3 = w_gpu(3,ll,j,k)
-    wloc3_4 = w_gpu(4,ll,j,k)
-    wloc3_5 = w_gpu(5,ll,j,k)
+    wloc3_1 = w_gpu(ll,j,k,1)
+    wloc3_2 = w_gpu(ll,j,k,2)
+    wloc3_3 = w_gpu(ll,j,k,3)
+    wloc3_4 = w_gpu(ll,j,k,4)
+    wloc3_5 = w_gpu(ll,j,k,5)
 !
 !   Derivatives of conservative variables
 !   Inner derivatives
@@ -492,7 +492,7 @@ subroutine bcrelax(ilat)
     df = df + jac_1_5*er_5_3*dwcdx3
     df = df + jac_1_5*er_5_4*dwcdx4
     df = df + jac_1_5*er_5_5*dwcdx5
-    fl_gpu(1,i,j,k) = fl_gpu(1,i,j,k) + df * dcsidx_gpu(i)
+    fl_gpu(i,j,k,1) = fl_gpu(i,j,k,1) + df * dcsidx_gpu(i)
     !m=2
     df = 0._mykind
     !mm=1
@@ -525,7 +525,7 @@ subroutine bcrelax(ilat)
     df = df + jac_2_5*er_5_3*dwcdx3
     df = df + jac_2_5*er_5_4*dwcdx4
     df = df + jac_2_5*er_5_5*dwcdx5
-    fl_gpu(2,i,j,k) = fl_gpu(2,i,j,k) + df * dcsidx_gpu(i)
+    fl_gpu(i,j,k,2) = fl_gpu(i,j,k,2) + df * dcsidx_gpu(i)
     !m=3
     df = 0._mykind
     !mm=1
@@ -558,7 +558,7 @@ subroutine bcrelax(ilat)
     df = df + jac_3_5*er_5_3*dwcdx3
     df = df + jac_3_5*er_5_4*dwcdx4
     df = df + jac_3_5*er_5_5*dwcdx5
-    fl_gpu(3,i,j,k) = fl_gpu(3,i,j,k) + df * dcsidx_gpu(i)
+    fl_gpu(i,j,k,3) = fl_gpu(i,j,k,3) + df * dcsidx_gpu(i)
     !m=4
     df = 0._mykind
     !mm=1
@@ -591,7 +591,7 @@ subroutine bcrelax(ilat)
     df = df + jac_4_5*er_5_3*dwcdx3
     df = df + jac_4_5*er_5_4*dwcdx4
     df = df + jac_4_5*er_5_5*dwcdx5
-    fl_gpu(4,i,j,k) = fl_gpu(4,i,j,k) + df * dcsidx_gpu(i)
+    fl_gpu(i,j,k,4) = fl_gpu(i,j,k,4) + df * dcsidx_gpu(i)
     !m=5
     df = 0._mykind
     !mm=1
@@ -624,7 +624,7 @@ subroutine bcrelax(ilat)
     df = df + jac_5_5*er_5_3*dwcdx3
     df = df + jac_5_5*er_5_4*dwcdx4
     df = df + jac_5_5*er_5_5*dwcdx5
-    fl_gpu(5,i,j,k) = fl_gpu(5,i,j,k) + df * dcsidx_gpu(i)
+    fl_gpu(i,j,k,5) = fl_gpu(i,j,k,5) + df * dcsidx_gpu(i)
 !
    enddo  ! end of j-loop 
   enddo  ! end of k-loop
@@ -641,13 +641,13 @@ subroutine bcrelax(ilat)
 !
     j = ny
 !
-    rho =  w_gpu(1,i,j,k)
+    rho =  w_gpu(i,j,k,1)
     ri  =  1._mykind/rho
-    uu  =  w_gpu(2,i,j,k) * ri
-    vv  =  w_gpu(3,i,j,k) * ri
-    ww  =  w_gpu(4,i,j,k) * ri
+    uu  =  w_gpu(i,j,k,2) * ri
+    vv  =  w_gpu(i,j,k,3) * ri
+    ww  =  w_gpu(i,j,k,4) * ri
     qq  =  0.5_mykind * (uu*uu + vv*vv + ww*ww)
-!   pp  =  gm1 * (w_gpu(5,i,j,k) - w_gpu(1,i,j,k) * qq)
+!   pp  =  gm1 * (w_gpu(i,j,k,5) - w_gpu(i,j,k,1) * qq)
     pp  =  rho*temperature_gpu(i,j,k)
     cc  =  gamma * pp * ri
     c   =  sqrt(cc)
@@ -674,9 +674,9 @@ subroutine bcrelax(ilat)
     jac_4_4  =  rho
     jac_4_5  =  0._mykind
     jac_5_1  =  qq
-    jac_5_2  =  w_gpu(2,i,j,k)
-    jac_5_3  =  w_gpu(3,i,j,k)
-    jac_5_4  =  w_gpu(4,i,j,k)
+    jac_5_2  =  w_gpu(i,j,k,2)
+    jac_5_3  =  w_gpu(i,j,k,3)
+    jac_5_4  =  w_gpu(i,j,k,4)
     jac_5_5  =  gm
 !   Jacobian of inverse conservative/primitive transformation (Eqn. (A.6) of Lodato et al, JCP 2008)
     jacinv_1_1 =  1._mykind
@@ -772,25 +772,25 @@ subroutine bcrelax(ilat)
     wloc0_5 = winf_gpu(5)
     l=1
     ll = j + 1 - l
-    wloc1_1 = w_gpu(1,i,ll,k)
-    wloc1_2 = w_gpu(2,i,ll,k)
-    wloc1_3 = w_gpu(3,i,ll,k)
-    wloc1_4 = w_gpu(4,i,ll,k)
-    wloc1_5 = w_gpu(5,i,ll,k)
+    wloc1_1 = w_gpu(i,ll,k,1)
+    wloc1_2 = w_gpu(i,ll,k,2)
+    wloc1_3 = w_gpu(i,ll,k,3)
+    wloc1_4 = w_gpu(i,ll,k,4)
+    wloc1_5 = w_gpu(i,ll,k,5)
     l=2
     ll = j + 1 - l
-    wloc2_1 = w_gpu(1,i,ll,k)
-    wloc2_2 = w_gpu(2,i,ll,k)
-    wloc2_3 = w_gpu(3,i,ll,k)
-    wloc2_4 = w_gpu(4,i,ll,k)
-    wloc2_5 = w_gpu(5,i,ll,k)
+    wloc2_1 = w_gpu(i,ll,k,1)
+    wloc2_2 = w_gpu(i,ll,k,2)
+    wloc2_3 = w_gpu(i,ll,k,3)
+    wloc2_4 = w_gpu(i,ll,k,4)
+    wloc2_5 = w_gpu(i,ll,k,5)
     l=3
     ll = j + 1 - l
-    wloc3_1 = w_gpu(1,i,ll,k)
-    wloc3_2 = w_gpu(2,i,ll,k)
-    wloc3_3 = w_gpu(3,i,ll,k)
-    wloc3_4 = w_gpu(4,i,ll,k)
-    wloc3_5 = w_gpu(5,i,ll,k)
+    wloc3_1 = w_gpu(i,ll,k,1)
+    wloc3_2 = w_gpu(i,ll,k,2)
+    wloc3_3 = w_gpu(i,ll,k,3)
+    wloc3_4 = w_gpu(i,ll,k,4)
+    wloc3_5 = w_gpu(i,ll,k,5)
 !
 !   Derivatives of conservative variables
 !   Inner derivatives
@@ -1167,7 +1167,7 @@ subroutine bcrelax(ilat)
     df = df + jac_1_5*er_5_3*dwcdy3
     df = df + jac_1_5*er_5_4*dwcdy4
     df = df + jac_1_5*er_5_5*dwcdy5
-    fl_gpu(1,i,j,k) = fl_gpu(1,i,j,k) + df * detady_gpu(j)
+    fl_gpu(i,j,k,1) = fl_gpu(i,j,k,1) + df * detady_gpu(j)
     !m=2
     df = 0._mykind
     !mm=1
@@ -1200,7 +1200,7 @@ subroutine bcrelax(ilat)
     df = df + jac_2_5*er_5_3*dwcdy3
     df = df + jac_2_5*er_5_4*dwcdy4
     df = df + jac_2_5*er_5_5*dwcdy5
-    fl_gpu(2,i,j,k) = fl_gpu(2,i,j,k) + df * detady_gpu(j)
+    fl_gpu(i,j,k,2) = fl_gpu(i,j,k,2) + df * detady_gpu(j)
     !m=3
     df = 0._mykind
     !mm=1
@@ -1233,7 +1233,7 @@ subroutine bcrelax(ilat)
     df = df + jac_3_5*er_5_3*dwcdy3
     df = df + jac_3_5*er_5_4*dwcdy4
     df = df + jac_3_5*er_5_5*dwcdy5
-    fl_gpu(3,i,j,k) = fl_gpu(3,i,j,k) + df * detady_gpu(j)
+    fl_gpu(i,j,k,3) = fl_gpu(i,j,k,3) + df * detady_gpu(j)
     !m=4
     df = 0._mykind
     !mm=1
@@ -1266,7 +1266,7 @@ subroutine bcrelax(ilat)
     df = df + jac_4_5*er_5_3*dwcdy3
     df = df + jac_4_5*er_5_4*dwcdy4
     df = df + jac_4_5*er_5_5*dwcdy5
-    fl_gpu(4,i,j,k) = fl_gpu(4,i,j,k) + df * detady_gpu(j)
+    fl_gpu(i,j,k,4) = fl_gpu(i,j,k,4) + df * detady_gpu(j)
     !m=5
     df = 0._mykind
     !mm=1
@@ -1299,7 +1299,7 @@ subroutine bcrelax(ilat)
     df = df + jac_5_5*er_5_3*dwcdy3
     df = df + jac_5_5*er_5_4*dwcdy4
     df = df + jac_5_5*er_5_5*dwcdy5
-    fl_gpu(5,i,j,k) = fl_gpu(5,i,j,k) + df * detady_gpu(j)
+    fl_gpu(i,j,k,5) = fl_gpu(i,j,k,5) + df * detady_gpu(j)
    enddo  ! end of i-loop 
   enddo  ! end of k-loop
   !@cuf iercuda=cudaDeviceSynchronize()

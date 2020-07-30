@@ -3,13 +3,20 @@ subroutine rk
 ! 3-rd order RK solver to advance in time
 !
  use mod_streams
+ use mod_euler
  implicit none
 !
  integer :: i,j,k,m,istep,ilat
  real(mykind) :: alp,dt,gam,gamdt,rho,rhodt
  real(mykind) :: elapsed,startTiming,endTiming
 !
- dt = dtmin*cfl 
+ real(mykind) :: tt,st,et
+!
+ if (cfl>0._mykind) then
+  dt = dtmin*cfl 
+ else
+  dt = dtmin
+ endif
  dtglobal = dt
 !
 ! Loop on the 'nstage' stages of RK solver
@@ -23,18 +30,22 @@ subroutine rk
   gamdt = gam*dt
   alpdt = alp*dt
 !
+!st = mpi_wtime()
  !$cuf kernel do(3) <<<*,*>>> 
   do k=1,nz
    do j=1,ny
     do i=1,nx
      do m=1,nv
-      fln_gpu(m,i,j,k) = -rhodt*fl_gpu(m,i,j,k)
-      fl_gpu(m,i,j,k) = 0._mykind
+      fln_gpu(i,j,k,m) = -rhodt*fl_gpu(i,j,k,m)
+      fl_gpu(i,j,k,m) = 0._mykind
      enddo
     enddo
    enddo
   enddo
  !@cuf iercuda=cudaDeviceSynchronize()
+!et = mpi_wtime()
+!tt = et-st
+!if (masterproc) write(error_unit,*) 'RK-I time =', tt
 !
 #ifdef CUDA_ASYNC
   call bc(0)
@@ -69,7 +80,7 @@ subroutine rk
   call bcswapdiv()
   if (ndim==3) call euler_k()
 !
-  if (istep == 3 .and. tresduc<1.) then
+  if (istep == 3 .and. tresduc<1._mykind) then
    call sensor()
    call bcswapduc_prepare()
    call visflx_div() ! No Cuda Sync here
@@ -102,7 +113,7 @@ subroutine rk
    do j=1,ny
     do i=1,nx
      do m=1,nv
-      fln_gpu(m,i,j,k) = fln_gpu(m,i,j,k)-gamdt*fl_gpu(m,i,j,k)
+      fln_gpu(i,j,k,m) = fln_gpu(i,j,k,m)-gamdt*fl_gpu(i,j,k,m)
      enddo
     enddo
    enddo
@@ -121,12 +132,19 @@ subroutine rk
    do j=1,ny
     do i=1,nx
      do m=1,nv
-      w_gpu(m,i,j,k) = w_gpu(m,i,j,k)+fln_gpu(m,i,j,k)
+      w_gpu(i,j,k,m) = w_gpu(i,j,k,m)+fln_gpu(i,j,k,m)
      enddo
     enddo
    enddo
   enddo
  !@cuf iercuda=cudaDeviceSynchronize()
+
+#ifdef USE_CUDA
+ iercuda = cudaGetLastError()
+ if (iercuda /= cudaSuccess) then
+  call fail_input("CUDA ERROR! Try to reduce the number of Euler threads in cuda_definitions.h: "//cudaGetErrorString(iercuda))
+ endif
+#endif
 !
   alpdtold  = alpdt 
   dfupdated = .false.

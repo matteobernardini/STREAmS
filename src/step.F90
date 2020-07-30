@@ -8,11 +8,6 @@ subroutine step
  integer :: i,j,k
  real(mykind) :: al,c,cc,dttemp,dtxi,dtyi,dtzi,evmax
  real(mykind) :: ri,rmu,rnu,tt,uu,vv,ww,rho,rhoe,qq,pp
- real(mykind), dimension(ny,nz) :: evmax_mat_yz
- real(mykind), dimension(ny) :: evmax_mat_y
-#ifdef USE_CUDA
- attributes(device) :: evmax_mat_yz,evmax_mat_y
-#endif
  real(mykind), dimension(ny) :: evmax_mat_y_cpu
  
  evmax = 0._mykind
@@ -33,17 +28,20 @@ subroutine step
  do k=1,nz
   do j=1,ny
    do i=1,nx
-    rho  = w_gpu(1,i,j,k)
+    rho  = w_gpu(i,j,k,1)
     ri   = 1._mykind/rho
-    uu   = w_gpu(2,i,j,k)*ri
-    vv   = w_gpu(3,i,j,k)*ri
-    ww   = w_gpu(4,i,j,k)*ri
-    rhoe = w_gpu(5,i,j,k)
+    uu   = w_gpu(i,j,k,2)*ri
+    vv   = w_gpu(i,j,k,3)*ri
+    ww   = w_gpu(i,j,k,4)*ri
+    rhoe = w_gpu(i,j,k,5)
     qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
     pp   = gm1*(rhoe-rho*qq)
     tt   = pp*ri ! Note that temperature (i,j,k) is still the old one
-!   rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
-    rmu  = sqgmr*tt**vtexp
+    if (visc_type==1) then
+     rmu  = sqgmr*tt**vtexp
+    else
+     rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
+    endif
     rnu  = ri*rmu
     al   = rnu*ggmopr  ! molecular conductivity
     cc   = gamma*tt
@@ -127,8 +125,11 @@ subroutine checkdt
     qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
     pp   = gm1*(rhoe-rho*qq)
     tt   = pp*ri ! Note that temperature (i,j,k) is still the old one
-!   rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
-    rmu  = sqgmr*tt**vtexp
+    if (visc_type==1) then
+     rmu  = sqgmr*tt**vtexp
+    else
+     rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
+    endif
     rnu  = ri*rmu
     al   = rnu*ggmopr  ! molecular conductivity
     cc   = gamma*tt

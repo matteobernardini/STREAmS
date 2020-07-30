@@ -76,7 +76,7 @@ end subroutine init_random_seed
 !
 subroutine get_reynolds(ny,eta,retau,rm,trat,s2tinf,reout)
 !
- use mod_streams, only: mykind, tol_iter
+ use mod_streams, only: mykind, tol_iter, visc_type, vtexp
  implicit none
 !
  integer, intent(in) :: ny
@@ -126,8 +126,11 @@ subroutine get_reynolds(ny,eta,retau,rm,trat,s2tinf,reout)
    fuu = alf*uu+(1-alf)*uu**2
    temperature(j) = tw+(tr-tw)*fuu+(1._mykind-tr)*uu**2 ! Duan & Martin (see Zhang)
    density(j) = 1._mykind/temperature(j)
-   viscosity(j) = temperature(j)**(3._mykind/4._mykind)       ! Power-law
-!  viscosity(j) = sqrt(temperature(j))*(1._mykind+s2tinf)/(1._mykind+s2tinf/temperature(j))
+   if (visc_type==1) then
+    viscosity(j) = temperature(j)**vtexp ! Power-law
+   else
+    viscosity(j) = sqrt(temperature(j))*(1._mykind+s2tinf)/(1._mykind+s2tinf/temperature(j))
+   endif
   enddo
   do j=2,ny
    du        = uplus(j)-uplus(j-1)
@@ -315,7 +318,7 @@ subroutine gasdev_s(harvest)
 !
 end subroutine gasdev_s
 !
-subroutine get_reynolds_channel(ny,eta,retau,rm,trat,s2tinf,reout)
+subroutine get_reynolds_channel(ny,eta,yn,retau,rm,trat,s2tinf,reout)
 !
  use mod_streams, only: mykind, tol_iter
  implicit none
@@ -324,6 +327,7 @@ subroutine get_reynolds_channel(ny,eta,retau,rm,trat,s2tinf,reout)
  real(mykind), intent(in)  :: retau,rm,trat,s2tinf
  real(mykind), intent(out) :: reout
  real(mykind), dimension(ny), intent(in)  :: eta
+ real(mykind), dimension(ny+1), intent(in) :: yn
  
  real(mykind), dimension(ny) :: uplus       ! Incompressible velocity profile
  real(mykind), dimension(ny) :: ucplus      ! Compressible velocity profile
@@ -331,17 +335,11 @@ subroutine get_reynolds_channel(ny,eta,retau,rm,trat,s2tinf,reout)
  real(mykind), dimension(ny) :: density     ! Density profile
  real(mykind), dimension(ny) :: viscosity   ! Viscosity profile
  real(mykind), dimension(ny) :: temperature ! Temperature profile
- real(mykind), dimension(ny+1) :: yn
 
  real(mykind) :: cf,dstar,gm1,gm1h,res,rfac,rhow,th,tr,tw,uci,ue,uu,yplus,du,dy,te
  real(mykind) :: pr,alf,s,fuu,rhosum,rhousum,ubulk
  real(mykind) :: gamma
  integer :: j
-!
- yn(1) = -1._mykind
- do j=1,ny
-  yn(j+1) = 2._mykind*eta(j)-yn(j)
- enddo
 !
  uplus = 0._mykind
  do j=1,ny

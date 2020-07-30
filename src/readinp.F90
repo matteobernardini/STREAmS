@@ -8,17 +8,17 @@ subroutine readinp
  integer :: l, i_skip
 !
  open (unit=12,file='input.dat',form='formatted')
- do i_skip=1,30
+ do i_skip=1,33
   read (12,*)
  enddo
  read (12,*)
- read (12,*) tresduc, ximp, deflec
+ read (12,*) tresduc, ximp, deflec, pgradf
  read (12,*)
  read (12,*)
- read (12,*) idiski, ncyc, cfl, nstep, nprint
+ read (12,*) idiski, ncyc, cfl, nstep, nprint, io_type
  read (12,*)
  read (12,*)
- read (12,*) rm, retauinflow, trat
+ read (12,*) rm, retauinflow, trat, visc_type, s2tinf, dftscaling
  read (12,*)
  read (12,*)
  read (12,*) istat, nstat
@@ -38,9 +38,9 @@ subroutine readinp
 !
  call check_input(2)
 !
- ivis   = 4
- iorder = 4
- iweno  = 2
+ !ivis   = 4
+ !iorder = 4
+ !iweno  = 2
 !
  ibc   = 0
  ibcnr = 0
@@ -50,6 +50,10 @@ subroutine readinp
   ibc(2) = 4
   ibc(3) = 4
   ibc(4) = 4
+! ibc(1) = 2
+! ibc(2) = 2
+! ibc(3) = 2
+! ibc(4) = 2
  case (0)
   ibc(3) = 5
   ibc(4) = 5

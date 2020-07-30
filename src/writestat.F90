@@ -70,3 +70,20 @@ subroutine writestat1d
  endif
 !
 end subroutine writestat1d
+!
+subroutine writestat2d_serial
+!
+! Writing stat file
+!
+ use mod_streams
+ implicit none
+!
+ if (ncoords(3)==0) then
+!
+  open(unit=12,file='wavplot_'//chx//'_'//chy//'.bin',form='unformatted')
+  write(12) w_av
+  close(12)
+!
+ endif
+!
+end subroutine writestat2d_serial

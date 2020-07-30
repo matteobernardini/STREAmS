@@ -13,7 +13,7 @@ subroutine bcfree(ilat)
    do j=1,ny
     do l=1,ng
      do m=1,nv
-      w_gpu(m,1-l,j,k) = winf_gpu(m)
+      w_gpu(1-l,j,k,m) = winf_gpu(m)
      enddo
     enddo
    enddo

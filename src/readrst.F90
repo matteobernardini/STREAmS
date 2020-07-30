@@ -39,6 +39,7 @@ subroutine readrst
    iermpi = rename_wrapper(oldname, newname)
    if (iermpi /= 0) write(error_unit,*) "Warning! Cannot rename file finaltime.dat to finaltime.bak"
   endif
+  call mpi_barrier(mpi_comm_world, iermpi)
  endif
 !
  sizes(1) = nblocks(1)*nx
@@ -84,3 +85,58 @@ subroutine readrst
  endif
 !
 end subroutine readrst
+
+subroutine readrst_serial
+!
+! Writing rst.bin and finaltime.dat
+!
+ use mod_streams
+ implicit none
+!
+ integer :: mpi_io_file
+ integer :: filetype
+ integer :: local_datatype
+ integer, dimension(3) :: sizes     ! Dimensions of the total grid
+ integer, dimension(3) :: subsizes  ! Dimensions of grid local to a procs
+ integer, dimension(3) :: starts    ! Starting coordinates
+ integer, dimension(3) :: memsizes
+ integer :: size_real
+ integer :: ntot,ntotxy,ntotyz
+ integer (kind=mpi_offset_kind) :: offset
+ integer :: i,j,k,l,m,iv
+ real(mykind) :: pp,rho,uu,vv,ww
+!
+ if (masterproc) write(*,*) 'Reading rst.bin'
+ write(*,*) 'START - Reading rst.bin from nrank = ',nrank
+!
+ open (11,file='rst0_'//chx//'_'//chz//'.bin',form='unformatted')
+ !rewind (11)
+ read   (11) fl
+ !read   (11) ((((w(m,i,j,k),m=1,nv), &
+ !                           i=1,nx),     &
+ !                           j=1,ny),     &
+ !                           k=1,nz)
+ close  (11)
+ write(*,*) 'END - Reading rst.bin from nrank = ',nrank
+!
+!w(1:nv, 1:nx, 1:ny, 1:nz) = fl
+ do iv=1,5
+  do k=1,nz
+   do j=1,ny
+    do i=1,nx
+     w(iv,i,j,k) = fl(i,j,k,iv)
+    enddo
+   enddo
+  enddo
+ enddo
+!
+ write(*,*) 'COPY - Reading rst.bin from nrank = ',nrank
+!
+ write(*,*) 'STARTTIME - Reading finaltime0 from nrank = ',nrank
+ open(11,file='finaltime0.dat')
+ ! read(11,*) icyc,itav,telaps
+ read(11,*) ncyc0,itav,telaps0
+ close(11)
+ write(*,*) 'ENDTIME - Reading finaltime0 from nrank = ',nrank
+!
+end subroutine readrst_serial

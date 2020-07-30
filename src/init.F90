@@ -31,14 +31,20 @@ subroutine init
 !
 ! Reading solution from file 
 !
-  call readrst
+  if(io_type == 1) call readrst_serial
+  if(io_type == 2) call readrst
   if (iflow==-1) then
   elseif (iflow==0) then
    if (idiski > 1) call readstat1d
    call generatewmean_channel
   else
-   if (idiski > 1) call readstat2d
-   call readdf
+   if(io_type == 1) then
+    call readdf_serial
+    if (idiski > 1) call readstat2d_serial
+   elseif(io_type == 2) then
+    call readdf
+    if (idiski > 1) call readstat2d
+   endif
    call generatewmean
    if (masterproc) call target_reystress
    call mpi_bcast(amat_df,9*ny,mpi_prec,0,mp_cart,iermpi)

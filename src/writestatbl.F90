@@ -97,8 +97,11 @@ subroutine writestatbl
 !  VAN DRIEST II 
 !
    tte  = pe/rhoe
-   rmue = sqgmr*tte**vtexp
-!  rmue = sqgmr*sqrt(tte)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tte)
+   if (visc_type==1) then
+    rmue = sqgmr*tte**vtexp
+   else
+    rmue = sqgmr*sqrt(tte)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tte)
+   endif
 !  rfac = pr**(1._mykind/3._mykind)
    ff   = ttw/tte
    aa   = ((rfac*0.2_mykind*rm**2)/ff)**0.5_mykind

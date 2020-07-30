@@ -23,8 +23,10 @@ subroutine init_channel
     ww  = wmean(4,i,j)/rho
 
     call random_number(rr)
-
     rr = rr-0.5_mykind
+
+    !rr = 0._mykind
+
     ufluc   = u0_02*rr(1)
     vfluc   = u0_02*rr(2)
     wfluc   = u0_02*rr(3)

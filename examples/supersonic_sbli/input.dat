@@ -1,0 +1,53 @@
+!=============================================================
+!
+! ███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗███████╗
+! ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║██╔════╝
+! ███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║███████╗
+! ╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║╚════██║
+! ███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████║
+! ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
+!
+! Supersonic TuRbulEnt Accelerated navier stokes Solver
+!
+! input file
+!
+!=============================================================
+
+ iflow 
+   2   
+
+  rlx           rly         rlz 
+   70.          12.         6.5
+ 
+ nxmax  nymax  nzmax
+  2048    400    256
+ 
+ nymaxwr   rlywr    dyp_target  
+  201       2.5        .7
+
+ ng    ivis  iorder  iweno
+  3     6      6       3
+ 
+ nblocks(1)  nblocks(3)
+    8            1 
+
+ tresduc  ximp  deflec  pgradf 
+  0.1      40.     8.     0.
+      
+ idiski   ncyc   cfl    nstep   nprint   io_type
+   0     50000   .75      1       1         2
+      
+ rm      re (friction)  twall/taw   visc_type   s2tinf  dftscaling
+ 2.28      250.           1.            2           0.      0.75
+  
+ istat  nstat
+  500     10
+
+ xstat
+   10. 20. 30. 35. 40. 45. 50. 55. 60. 65.
+ 
+ dtsave dtsave_restart  enable_plot3d   enable_vtk
+  5.       50.                1              1
+
+  irand
+   -1

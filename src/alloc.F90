@@ -6,9 +6,15 @@ subroutine allocate_vars()
  implicit none
 !
 #ifdef USE_CUDA
- allocate(w_gpu(nv,1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng))
- allocate(fl_gpu(nv,nx,ny,nz))
- allocate(fln_gpu(nv,nx,ny,nz))
+ allocate(fl_trans_gpu(1:ny,1:nx,1:nz,nv))
+ allocate(temperature_trans_gpu(1-ng:ny+ng,1-ng:nx+ng,1-ng:nz+ng))
+ allocate(fhat_trans_gpu(1-ng:ny+ng,1-ng:nx+ng,1-ng:nz+ng,5))
+
+ allocate(wv_trans_gpu(1-ng:ny+ng,1-ng:nx+ng,1-ng:nz+ng,nv))
+
+ allocate(w_gpu(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,nv))
+ allocate(fl_gpu(nx,ny,nz,nv))
+ allocate(fln_gpu(nx,ny,nz,nv))
  allocate(temperature_gpu(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng))
  allocate(ducros_gpu(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng))
  allocate(wmean_gpu(nv,1-ng:nx+1+ng,ny))
@@ -22,7 +28,7 @@ subroutine allocate_vars()
  allocate(xg_gpu(1-ng:nxmax+ng+1))
  allocate(coeff_deriv1_gpu(3))
  allocate(coeff_clap_gpu(0:3))
- allocate(fhat_gpu(6,1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng))
+ allocate(fhat_gpu(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,6))
  allocate(ibcnr_gpu(6))
  allocate(dcoe_gpu(4,4))
  allocate(winf_gpu(nv),winf1_gpu(nv))
@@ -32,20 +38,40 @@ subroutine allocate_vars()
  allocate(by_df_gpu(3,ny,-nfmax:nfmax))
  allocate(bz_df_gpu(3,ny,-nfmax:nfmax))
  allocate(amat_df_gpu(3,3,ny))
+
+ allocate(gplus_x(5,2*ng,ny,nz))
+ allocate(gminus_x(5,2*ng,ny,nz))
+ allocate(gplus_y(5,2*ng,nx,nz))
+ allocate(gminus_y(5,2*ng,nx,nz))
+ allocate(gplus_z(5,2*ng,nx,ny))
+ allocate(gminus_z(5,2*ng,nx,ny))
 #endif
 !
- allocate(wbuf1s_gpu(nv,ng,ny,nz))  
- allocate(wbuf2s_gpu(nv,ng,ny,nz))  
- allocate(wbuf3s_gpu(nv,nx,ng,nz))  
- allocate(wbuf4s_gpu(nv,nx,ng,nz))  
- allocate(wbuf5s_gpu(nv,nx,ny,ng))  
- allocate(wbuf6s_gpu(nv,nx,ny,ng))  
- allocate(wbuf1r_gpu(nv,ng,ny,nz))  
- allocate(wbuf2r_gpu(nv,ng,ny,nz))  
- allocate(wbuf3r_gpu(nv,nx,ng,nz))  
- allocate(wbuf4r_gpu(nv,nx,ng,nz))  
- allocate(wbuf5r_gpu(nv,nx,ny,ng))  
- allocate(wbuf6r_gpu(nv,nx,ny,ng))  
+ allocate(wv_gpu(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,nv))
+ allocate(w_order(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,nv))
+
+ allocate(wallpfield_gpu(nx,nz))
+ allocate(slicexy_gpu(nv,nx,ny))
+ allocate(vf_df_old(3,ny,nz) )
+ allocate(uf(3,ny,nz) )
+ allocate(evmax_mat_yz(ny,nz) )
+ allocate(evmax_mat_y(ny) )
+ allocate(bulk5g_gpu(5))
+ allocate(rtrms_ib_gpu(ny,nz))
+ allocate(rtrms_ib_1d_gpu(ny))
+!
+ allocate(wbuf1s_gpu(ng,ny,nz,nv))  
+ allocate(wbuf2s_gpu(ng,ny,nz,nv))  
+ allocate(wbuf3s_gpu(nx,ng,nz,nv))  
+ allocate(wbuf4s_gpu(nx,ng,nz,nv))  
+ allocate(wbuf5s_gpu(nx,ny,ng,nv))  
+ allocate(wbuf6s_gpu(nx,ny,ng,nv))  
+ allocate(wbuf1r_gpu(ng,ny,nz,nv))  
+ allocate(wbuf2r_gpu(ng,ny,nz,nv))  
+ allocate(wbuf3r_gpu(nx,ng,nz,nv))  
+ allocate(wbuf4r_gpu(nx,ng,nz,nv))  
+ allocate(wbuf5r_gpu(nx,ny,ng,nv))  
+ allocate(wbuf6r_gpu(nx,ny,ng,nv))  
  allocate(divbuf1s_gpu(ng,ny,nz))  
  allocate(divbuf2s_gpu(ng,ny,nz))  
  allocate(divbuf3s_gpu(nx,ng,nz))  
@@ -72,8 +98,8 @@ subroutine allocate_vars()
  allocate(ducbuf6r_gpu(nx,ny,ng))
 !
  allocate(w(nv,1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng))
- allocate(fl(nv,nx,ny,nz))
- allocate(fln(nv,nx,ny,nz))
+ allocate(fl(nx,ny,nz,nv))
+ allocate(fln(nx,ny,nz,nv))
  allocate(temperature(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng))
  allocate(ducros(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng))
  allocate(wmean(nv,1-ng:nx+1+ng,ny))
@@ -87,7 +113,7 @@ subroutine allocate_vars()
  allocate(xg(1-ng:nxmax+ng+1))
  allocate(coeff_deriv1(3))
  allocate(coeff_clap(0:3))
- allocate(fhat(6,1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng)) ! Size increased to exchange divergence
+ allocate(fhat(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,6)) ! Size increased to exchange divergence
  allocate(ibcnr(6))
  allocate(dcoe(4,4))
  allocate(winf(nv),winf1(nv))
@@ -97,6 +123,8 @@ subroutine allocate_vars()
  allocate(by_df(3,ny,-nfmax:nfmax))
  allocate(bz_df(3,ny,-nfmax:nfmax))
  allocate(amat_df(3,3,ny))
+ allocate(wallpfield(nx,nz))
+ allocate(slicexy(nv,nx,ny))
 !
  allocate(ibc(6))
  allocate(dxg(nxmax))
@@ -107,18 +135,18 @@ subroutine allocate_vars()
  allocate(w_av_1d(nvmean,ny))
  allocate(w_avxzg(nvmean,ny))
  allocate(bx_df(3,nxmax,-nfmax:nfmax))
- allocate(wbuf1s(nv,ng,ny,nz))  
- allocate(wbuf2s(nv,ng,ny,nz))  
- allocate(wbuf3s(nv,nx,ng,nz))  
- allocate(wbuf4s(nv,nx,ng,nz))  
- allocate(wbuf5s(nv,nx,ny,ng))  
- allocate(wbuf6s(nv,nx,ny,ng))  
- allocate(wbuf1r(nv,ng,ny,nz))  
- allocate(wbuf2r(nv,ng,ny,nz))  
- allocate(wbuf3r(nv,nx,ng,nz))  
- allocate(wbuf4r(nv,nx,ng,nz))  
- allocate(wbuf5r(nv,nx,ny,ng))  
- allocate(wbuf6r(nv,nx,ny,ng))  
+ allocate(wbuf1s(ng,ny,nz,nv))  
+ allocate(wbuf2s(ng,ny,nz,nv))  
+ allocate(wbuf3s(nx,ng,nz,nv))  
+ allocate(wbuf4s(nx,ng,nz,nv))  
+ allocate(wbuf5s(nx,ny,ng,nv))  
+ allocate(wbuf6s(nx,ny,ng,nv))  
+ allocate(wbuf1r(ng,ny,nz,nv))  
+ allocate(wbuf2r(ng,ny,nz,nv))  
+ allocate(wbuf3r(nx,ng,nz,nv))  
+ allocate(wbuf4r(nx,ng,nz,nv))  
+ allocate(wbuf5r(nx,ny,ng,nv))  
+ allocate(wbuf6r(nx,ny,ng,nv))  
  allocate(divbuf1s(ng,ny,nz))  
  allocate(divbuf2s(ng,ny,nz))  
  allocate(divbuf3s(nx,ng,nz))  
@@ -152,9 +180,19 @@ subroutine copy_cpu_to_gpu()
 !
  use mod_streams
  implicit none
+ integer :: i,j,k,iv
 !
+ do iv=1,5
+  do k=1-ng,nz+ng
+   do j=1-ng,ny+ng
+    do i=1-ng,nx+ng
+     w_order(i,j,k,iv) = w(iv,i,j,k)
+    enddo
+   enddo
+  enddo
+ enddo
 #ifdef USE_CUDA
- w_gpu            = w
+ w_gpu            = w_order
 !fl_gpu           = fl
 !fln_gpu          = fln
 !temperature_gpu  = temperature
@@ -188,7 +226,7 @@ subroutine copy_cpu_to_gpu()
  bz_df_gpu        = bz_df
  amat_df_gpu      = amat_df
 #else
- call move_alloc( w            , w_gpu           )
+ call move_alloc( w_order      , w_gpu           )
  call move_alloc( fl           , fl_gpu          )
  call move_alloc( fln          , fln_gpu         )
  call move_alloc( temperature  , temperature_gpu )
@@ -228,20 +266,31 @@ subroutine copy_gpu_to_cpu
 !
  use mod_streams
  implicit none
+ integer :: i,j,k,iv
 !
 #ifdef USE_CUDA
- w = w_gpu
+ w_order = w_gpu
  temperature = temperature_gpu
  vf_df = vf_df_gpu
 #else
- call move_alloc(w_gpu, w)
+ call move_alloc(w_gpu, w_order)
  call move_alloc(temperature_gpu , temperature)
  call move_alloc(vf_df_gpu , vf_df)
  call move_alloc(x_gpu , x)
  call move_alloc(xg_gpu,xg)
  call move_alloc(y_gpu , y)
  call move_alloc(z_gpu , z)
+ call move_alloc(fl_gpu, fl)
 #endif
+ do iv=1,5
+  do k=1-ng,nz+ng
+   do j=1-ng,ny+ng
+    do i=1-ng,nx+ng
+     w(iv,i,j,k) = w_order(i,j,k,iv)
+    enddo
+   enddo
+  enddo
+ enddo
 end subroutine copy_gpu_to_cpu
 
 subroutine reset_cpu_gpu
@@ -251,12 +300,13 @@ subroutine reset_cpu_gpu
 !
 #ifdef USE_CUDA
 #else
- call move_alloc(w, w_gpu)
+ call move_alloc(w_order, w_gpu)
  call move_alloc(temperature, temperature_gpu)
  call move_alloc(vf_df, vf_df_gpu)
  call move_alloc(x , x_gpu)
  call move_alloc(xg,xg_gpu)
  call move_alloc(y , y_gpu)
  call move_alloc(z , z_gpu)
+ call move_alloc(fl, fl_gpu)
 #endif
 end subroutine reset_cpu_gpu

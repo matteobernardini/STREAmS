@@ -61,3 +61,35 @@ subroutine writedf
  endif
 !
 end subroutine writedf
+!
+subroutine writedf_serial
+!
+! Writing df.bin
+!
+ use mod_streams
+ implicit none
+!
+ integer :: i,l,m,j,k
+ integer :: mpi_io_file
+ integer :: filetype
+ integer :: local_datatype
+ integer, dimension(3) :: sizes     ! Dimensions of the total grid
+ integer, dimension(3) :: subsizes  ! Dimensions of grid local to a procs
+ integer, dimension(3) :: starts    ! Starting coordinates
+ integer, dimension(3) :: memsizes
+ integer :: size_real
+ integer :: ntotyz
+ integer (KIND=MPI_OFFSET_KIND) :: offset
+!
+ if (ncoords(1)==0) then
+  open(12,file='vf1_df_'//chz//'.bin',form='unformatted')
+  do k=1,nz
+   do j=1,ny
+    write(12) (vf_df(m,j,k),m=1,3)
+   enddo
+  enddo
+  write(12) w(:,1-ng:0,:,:)
+  close(12)
+ endif
+!
+endsubroutine writedf_serial

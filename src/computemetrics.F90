@@ -44,11 +44,6 @@ subroutine computemetrics
   y(j) = yg(jj+j)
  enddo
 !
- yn(1) = -1._mykind
- do j=1,ny
-  yn(j+1) = 2._mykind*y(j)-yn(j)
- enddo
-!
  kk = nz*ncoords(3)
  do k=1-ng,nz+ng
   z(k) = zg(kk+k)

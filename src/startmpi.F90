@@ -8,6 +8,7 @@ subroutine startmpi
  logical :: reord
  logical :: remain_dims(ndims)
  integer :: i_skip, dims(2)
+ !integer(kind=cuda_count_kind) :: req_stacksize_gpu
 !
  call mpi_init(iermpi)
  call mpi_comm_rank(mpi_comm_world,nrank,iermpi)
@@ -25,6 +26,10 @@ subroutine startmpi
  write(*,*) "MPI rank",nrank,"using GPU",mydev
  iermpi = cudaStreamCreate(stream1)
  iermpi = cudaStreamCreate(stream2)
+ !req_stacksize_gpu = 32000000
+ !iermpi = cudaDeviceSetLimit( cudaLimitStackSize, req_stacksize_gpu )
+ !write(*,*) "GPU stack enlarged"
+ !possible limit arguments are cudaLimitStackSize, cudaLimitPrintfSize, and cudaLimitMallocHeapSize.
 #endif
 !
  allocate(ncoords(ndims))
@@ -50,8 +55,13 @@ subroutine startmpi
  read (12,*) nymaxwr,rlywr,dyp_target
  read (12,*)
  read (12,*)
+ read (12,*) ng, ivis, iorder, iweno
+ read (12,*)
+ read (12,*)
  read (12,*) nblocks(1),nblocks(3)
  close(12)
+!
+ ngdf = iorder/2
 !
  masterproc = .false.
  if (nrank==0) masterproc = .true.
@@ -91,16 +101,19 @@ subroutine startmpi
  remain_dims(2) = .false.
  remain_dims(3) = .false.
  call mpi_cart_sub(mp_cart,remain_dims,mp_cartx,iermpi)
+ call mpi_comm_rank(mp_cartx,nrank_x,iermpi)
  call mpi_cart_shift(mp_cartx,0,1,ileftx,irightx,iermpi)
  remain_dims(2) = .true.
  remain_dims(1) = .false.
  remain_dims(3) = .false.
  call mpi_cart_sub(mp_cart,remain_dims,mp_carty,iermpi)
+ call mpi_comm_rank(mp_carty,nrank_y,iermpi)
  call mpi_cart_shift(mp_carty,0,1,ilefty,irighty,iermpi)
  remain_dims(3) = .true.
  remain_dims(1) = .false.
  remain_dims(2) = .false.
  call mpi_cart_sub(mp_cart,remain_dims,mp_cartz,iermpi)
+ call mpi_comm_rank(mp_cartz,nrank_z,iermpi)
  call mpi_cart_shift(mp_cartz,0,1,ileftz,irightz,iermpi)
 !
 end subroutine startmpi

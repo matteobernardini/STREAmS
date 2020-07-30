@@ -15,7 +15,11 @@ subroutine solver
  call copy_cpu_to_gpu()
 !
  if (masterproc) write(*,*) 'Compute time step'
- call step()
+ if (cfl>0._mykind) then
+  call step()
+ else
+  dtmin = abs(cfl)
+ endif
  if (masterproc) write(*,*) 'Done'
  call updateghost()
  call prims()
@@ -34,18 +38,36 @@ subroutine solver
   icyc = icyc+1
 !
   call rk() ! Third-order RK scheme
+  !if(io_type > 0) then
+  ! call write_wallpressure
+  !endif
  !
-  if (mod(icyc,istat)==0) then
-   call updateghost()
-   call prims()
-   call copy_gpu_to_cpu()
-   if (iflow==-1) then
-   elseif (iflow==0) then
-    call stats1d()
-   else
-    call stats2d()
+  if (io_type>0) then
+!
+   if (mod(icyc,istat)==0) then
+    call updateghost()
+    call prims()
+    call copy_gpu_to_cpu()
+    if (iflow==-1) then
+    elseif (iflow==0) then
+     call stats1d()
+    else
+     call stats2d()
+    endif
+    call reset_cpu_gpu()
    endif
-   call reset_cpu_gpu()
+!
+   if (telaps>tsol(istore)) then
+    call updateghost()
+    call prims()
+    call copy_gpu_to_cpu()
+    if(enable_plot3d > 0) call writefield()
+    if(enable_vtk > 0) call writefieldvtk()
+    if (iflow>0) call writestatzbl()
+    istore = istore+1
+    call reset_cpu_gpu()
+   endif
+!
   endif
 !
   if (mod(i,nprint)==0) then
@@ -53,33 +75,45 @@ subroutine solver
    call printres()
   endif
 !
-  if (mod(i,nstep)==0) call step() ! Compute the time step
-!
-  if (telaps>tsol(istore)) then
-   call updateghost()
-   call prims()
-   call copy_gpu_to_cpu()
-   if(enable_plot3d > 0) call writefield()
-   if(enable_vtk > 0) call writefieldvtk()
-   if (iflow>0) call writestatzbl()
-   istore = istore+1
-   call reset_cpu_gpu()
+  if (cfl>0._mykind) then
+   if (mod(i,nstep)==0) call step() ! Compute the time step
   endif
 !
-  if (telaps>tsol_restart(istore_restart)) then
-   call updateghost()
-   call prims()
-   call copy_gpu_to_cpu()
-   call writerst()
-   if (iflow==-1) then
-   elseif (iflow==0) then
-    call writestat1d()
-   else
-    call writestat2d()
-    call writedf()
+  if (io_type==1) then
+!
+   if (telaps>tsol_restart(istore_restart)) then
+    call updateghost()
+    call prims()
+    call copy_gpu_to_cpu()
+    call writerst_serial()
+    if (iflow==-1) then
+    elseif (iflow==0) then
+     call writestat1d()
+    else
+     call writestat2d_serial()
+     call writedf_serial()
+    endif
+    istore_restart = istore_restart+1
+    call reset_cpu_gpu()
    endif
-   istore_restart = istore_restart+1
-   call reset_cpu_gpu()
+!
+  elseif (io_type == 2) then
+!
+   if (telaps>tsol_restart(istore_restart)) then
+    call updateghost()
+    call prims()
+    call copy_gpu_to_cpu()
+    call writerst()
+    if (iflow==-1) then
+    elseif (iflow==0) then
+     call writestat1d()
+    else
+     call writestat2d()
+     call writedf()
+    endif
+    istore_restart = istore_restart+1
+    call reset_cpu_gpu()
+   endif
   endif
 !
   inquire(file="stop.stop",exist=stop_streams)
@@ -89,6 +123,9 @@ subroutine solver
 !
  endTiming = mpi_wtime()
  elapsed = endTiming-startTiming
- if (masterproc) write(20,*) 'Time-step time =', elapsed/ncyc
+ if (ncyc>0) then
+  if (masterproc) write(error_unit,*) 'Time-step time =', elapsed/ncyc
+  if (masterproc) write(20,*) 'Time-step time =', elapsed/ncyc
+ endif
 !
 end subroutine solver

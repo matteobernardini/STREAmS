@@ -38,26 +38,23 @@ subroutine generategrid
  select case (iflow)
 !
  case(-1) ! wind tunnel
-  xg = xg-0.5_mykind*rlx
-  dy = rly/nymax
-  do j=1-ng,nymax+ng
-   yg(j) = -0.5_mykind*rly+(j-1)*dy
-  enddo
+  call readgrid()
  case(0)  ! Channel Flow
 !
   dcsi = 1._mykind/nymax
   b    = 1._mykind
   do
    bold = b
-!  b = 2._mykind*atanh(tanh(0.5_mykind*b*(dcsi-1._mykind))/(dyp_target/retauinflow-1._mykind))
-   b = atanh(tanh(0.5_mykind*b)*(dyp_target/retauinflow-1._mykind))*2._mykind/(dcsi-1._mykind)
+   b = atanh(tanh(0.5_mykind*b)*(dyp_target/retauinflow-1._mykind))/(dcsi-0.5_mykind)
    if (abs(b-bold) < tol_iter) exit
-!  write(*,*) 'Stretching parameter b =', b 
   enddo
-  if (masterproc) write(*,*) 'Stretching parameter b =', b 
+  if (masterproc) write(*,*) 'Stretching parameter b =', b
+  do j=1,ny+1
+   csi   = (real(j,mykind)-1._mykind)*dcsi
+   yn(j) = tanh(b*(csi-0.5_mykind))/tanh(b*0.5_mykind)
+  enddo
   do j=1,ny
-   csi  = (real(j,mykind)-0.5_mykind)*dcsi
-   yg(j) =  tanh(b*(csi-0.5_mykind))/tanh(b*0.5_mykind)
+   yg(j) = 0.5_mykind*(yn(j)+yn(j+1))
   enddo
   do j=1,ng
    yg(nymax+j) =  2._mykind-yg(nymax+1-j)
@@ -165,17 +162,26 @@ subroutine generategrid
  end select
 !
  if (masterproc) then
-  write(*,*) 'Delta x+ = ', dx*retauinflow
-  open(18,file='x.dat')
-  do i=1-ng,nxmax+ng+1
-   write(18,*) xg(i)
-  enddo
-  close(18)
-  open(18,file='y.dat')
-  do j=1-ng,nymax+ng
-   write(18,*) yg(j)
-  enddo
-  close(18)
+  if (iflow>=0) then
+   write(*,*) 'Delta x+ = ', dx*retauinflow
+   open(18,file='x.dat')
+   do i=1-ng,nxmax+ng+1
+    write(18,*) xg(i)
+   enddo
+   close(18)
+   open(18,file='y.dat')
+   do j=1-ng,nymax+ng
+    write(18,*) yg(j)
+   enddo
+   close(18)
+   if (iflow==0) then
+    open(18,file='yn.dat')
+    do j=1,nymax+1
+     write(18,*) yn(j)
+    enddo
+    close(18)
+   endif
+  endif
  endif
 !
 end subroutine generategrid

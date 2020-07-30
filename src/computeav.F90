@@ -29,8 +29,11 @@ subroutine compute_av
     ww   = rhow*ri
     pp   = rho*temperature(i,j,k)
     tt   = pp*ri
-!   rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
-    rmu  = sqgmr*tt**vtexp
+    if (visc_type==1) then
+     rmu  = sqgmr*tt**vtexp
+    else
+     rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
+    endif
     rho2 = rho*rho
     uu2  = uu*uu
     vv2  = vv*vv
@@ -85,6 +88,8 @@ subroutine compute_av1d
  real(mykind) :: uu2,vv2,ww2
  integer :: i,j,k,npt
 !
+ write(error_unit,*) "compute av from rank: ",nrank
+!
  w_avxz = 0._mykind
 !
  do k=1,nz
@@ -101,8 +106,11 @@ subroutine compute_av1d
     ww   = rhow*ri
     pp   = rho*temperature(i,j,k)
     tt   = pp*ri
-!   rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
-    rmu  = sqgmr*tt**vtexp
+    if (visc_type==1) then
+     rmu  = sqgmr*tt**vtexp
+    else
+     rmu  = sqgmr*sqrt(tt)*(1._mykind+s2tinf)/(1._mykind+s2tinf/tt)
+    endif
     rho2 = rho*rho
     uu2  = uu*uu
     vv2  = vv*vv

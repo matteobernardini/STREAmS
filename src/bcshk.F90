@@ -20,14 +20,14 @@ subroutine bcshk(ilat)
 !    if (abs(xxtan)>3) then
      if (abs(xx)>.2_mykind) then
       do m=1,nv
-       w_gpu(m,i,ny+l,k) = w_gpu(m,i,ny,k)
+       w_gpu(i,ny+l,k,m) = w_gpu(i,ny,k,m)
       enddo
      else
 !     ftanh = 0.5_mykind*(1._mykind+tanh(xxtan))
       ftanh = 0.5_mykind*(1._mykind+tanh(xx/tanhsfac))
       do m=1,nv
        dwinf = winf1_gpu(m)-winf_gpu(m)
-       w_gpu(m,i,ny+l,k) = winf_gpu(m)+dwinf*ftanh
+       w_gpu(i,ny+l,k,m) = winf_gpu(m)+dwinf*ftanh
       enddo
      endif
     enddo
