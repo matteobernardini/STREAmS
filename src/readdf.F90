@@ -20,6 +20,8 @@ subroutine readdf
  character(len=256) :: oldname, newname
  logical :: file_exists
 !
+ inquire(file="df.bin",exist=file_exists)
+!
  if (ncoords(1)==0) then
 !
   sizes(1) = 1
@@ -35,7 +37,6 @@ subroutine readdf
 !
   call mpi_type_create_subarray(3,sizes,subsizes,starts,mpi_order_fortran,mpi_prec,filetype,iermpi)
   call mpi_type_commit(filetype,iermpi)
-  inquire(file="df.bin",exist=file_exists)
   if (file_exists) then
    call mpi_file_open(mp_cartz,'df.bin',mpi_mode_rdonly,mpi_info_null,mpi_io_file,iermpi)
   else
@@ -68,6 +69,7 @@ subroutine readdf
  call mpi_barrier(mpi_comm_world, iermpi)
 !
  if (file_exists) then
+  call mpi_barrier(mpi_comm_world, iermpi)
   if (masterproc) then
    oldname = c_char_"df.bin"//c_null_char
    newname = c_char_"df.bak"//c_null_char
