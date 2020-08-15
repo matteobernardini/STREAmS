@@ -382,7 +382,7 @@ subroutine euler_i(istart, iend)
 !
 !    Reconstruction of the '+' and '-' fluxes
 !
-     call wenorec(5,gplus,gminus,gl,gr,ng,iweno)
+     call wenorec(5,gplus,gminus,gl,gr,iweno)
 !
      do m=1,5
       ghat(m) = gl(m) + gr(m) ! char. flux
@@ -721,7 +721,7 @@ subroutine euler_j
 !
 !    Reconstruction of the '+' and '-' fluxes
 !
-     call wenorec (5,gplus,gminus,gl,gr,ng,iweno)
+     call wenorec (5,gplus,gminus,gl,gr,iweno)
 !
      do m=1,5
       ghat(m) = gl(m) + gr(m) ! char. flux
@@ -1050,7 +1050,7 @@ subroutine euler_k
 !
 !   Reconstruction of the '+' and '-' fluxes (page 32)
 !
-     call wenorec (5,gplus,gminus,gl,gr,ng,iweno)
+     call wenorec (5,gplus,gminus,gl,gr,iweno)
 !
      do m=1,5
       ghat(m) = gl(m) + gr(m) ! char. flux
@@ -1459,7 +1459,7 @@ end subroutine euler_k
 !
 !               Reconstruction of the '+' and '-' fluxes
 !
-                call wenorec(5,gplus(:,:,j,k),gminus(:,:,j,k),gl,gr,ng,iweno)
+                call wenorec(5,gplus(:,:,j,k),gminus(:,:,j,k),gl,gr,iweno)
 !
                 do m=1,5
                     ghat(m) = gl(m) + gr(m) ! char. flux
@@ -1847,7 +1847,7 @@ end subroutine euler_k
 !
 !               Reconstruction of the '+' and '-' fluxes
 !
-                call wenorec(5,gplus(:,:,i,k),gminus(:,:,i,k),gl,gr,ng,iweno)
+                call wenorec(5,gplus(:,:,i,k),gminus(:,:,i,k),gl,gr,iweno)
 !
                 do m=1,5
                     ghat(m) = gl(m) + gr(m) ! char. flux
@@ -2202,7 +2202,7 @@ end subroutine euler_k
 !
 !               Reconstruction of the '+' and '-' fluxes
 !
-                call wenorec(5,gplus(:,:,i,j),gminus(:,:,i,j),gl,gr,ng,iweno)
+                call wenorec(5,gplus(:,:,i,j),gminus(:,:,i,j),gl,gr,iweno)
 !
                 do m=1,5
                     ghat(m) = gl(m) + gr(m) ! char. flux
@@ -2233,14 +2233,14 @@ end subroutine euler_k
 #ifdef USE_CUDA
 attributes(device) &
 #endif
-subroutine wenorec(nvar,vp,vm,vminus,vplus,ng,iweno)
+subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
 !    
      implicit none
      integer, parameter :: mykind = MYKIND
 !
 !    Passed arguments
-     integer :: nvar, ng, iweno
-     real(mykind),dimension(nvar,2*ng) :: vm,vp
+     integer :: nvar, iweno
+     real(mykind),dimension(nvar,2*iweno) :: vm,vp
      real(mykind),dimension(nvar) :: vminus,vplus
 !    
 !    Local variables
@@ -2254,14 +2254,14 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,ng,iweno)
 !    
      if (iweno==1) then ! Godunov
 !    
-         i = ng ! index of intermediate node to perform reconstruction
+         i = iweno ! index of intermediate node to perform reconstruction
 !    
          vminus(1:nvar) = vp(1:nvar,i)
          vplus (1:nvar) = vm(1:nvar,i+1)
 !    
      elseif (iweno==2) then ! WENO-3
 !    
-         i = ng ! index of intermediate node to perform reconstruction
+         i = iweno ! index of intermediate node to perform reconstruction
 !    
          dwe(1)   = 2./3.
          dwe(0)   = 1./3.
@@ -2298,7 +2298,7 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,ng,iweno)
 !    
      elseif (iweno==3) then ! WENO-5
 !    
-      i = ng ! index of intermediate node to perform reconstruction
+      i = iweno ! index of intermediate node to perform reconstruction
 !    
       dwe( 0) = 1./10.
       dwe( 1) = 6./10.
@@ -2345,7 +2345,7 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,ng,iweno)
 !    
      elseif (iweno==4) then ! WENO-7
 !    
-      i = ng ! index of intermediate node to perform reconstruction
+      i = iweno ! index of intermediate node to perform reconstruction
 !    
       dwe( 0) = 1./35.
       dwe( 1) = 12./35.
