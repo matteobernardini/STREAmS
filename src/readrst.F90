@@ -75,6 +75,7 @@ subroutine readrst
  call mpi_barrier(mpi_comm_world, iermpi)
 !
  if (file2_exists) then
+  call mpi_barrier(mpi_comm_world, iermpi)
   if (masterproc) then
    oldname = c_char_"rst.bin"//c_null_char
    newname = c_char_"rst.bak"//c_null_char
