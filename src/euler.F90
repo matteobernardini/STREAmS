@@ -22,7 +22,7 @@ subroutine euler_i(istart, iend)
  real(mykind),dimension(5) :: evmax
  real(mykind),dimension(5,5) :: el,er
  real(mykind),dimension(5) :: gr,gl,ghat
- real(mykind),dimension(5,2*ng) :: gplus,gminus
+ real(mykind),dimension(5,2*iweno) :: gplus,gminus
  integer,dimension(1-ng:nx+ng) :: ishk
 !
  real(mykind),dimension(1-ng:nx+ng) :: den
@@ -43,7 +43,7 @@ subroutine euler_i(istart, iend)
  endi = nx
  endj = ny
  endk = nz
- ng2  = iorder
+ ng2  = 2*iweno
  lmax = iorder/2 ! max stencil width
  if (ibc(2)==4.or.ibc(2)==8) then
   endi = nx-1
@@ -361,13 +361,13 @@ subroutine euler_i(istart, iend)
       evmax(m) = -1.
      enddo
      do l=1,ng2 ! LLF
-      ll = i + l - lmax
+      ll = i + l - iweno
       do  m=1,5
        evmax(m) = max(ev(m,ll),evmax(m))
       enddo
      enddo
      do l=1,ng2 ! loop over the stencil centered at face i
-      ll = i + l - lmax
+      ll = i + l - iweno
       do m=1,5
        wc = 0.
        gc = 0.
@@ -476,7 +476,7 @@ subroutine euler_j
  endi = nx
  endj = ny
  endk = nz
- ng2  = iorder
+ ng2  = 2*iweno
  lmax = iorder/2 ! max stencil width
  jstart = 1
  if (ibc(3)==4.or.ibc(3)==8) then
@@ -700,13 +700,13 @@ subroutine euler_j
       evmax(m) = -1.
      enddo
      do l=1,ng2 ! LLF
-      ll = j + l - lmax
+      ll = j + l - iweno
       do  m=1,5
        evmax(m) = max(ev(m,ll),evmax(m))
       enddo
      enddo
      do l=1,ng2 ! loop over the stencil centered at face j
-      ll = j + l - lmax
+      ll = j + l - iweno
       do m=1,5
        wc = 0.
        gc = 0.
@@ -808,7 +808,7 @@ subroutine euler_k
  endi = nx
  endj = ny
  endk = nz
- ng2  = iorder
+ ng2  = 2*iweno
  lmax = iorder/2 ! max stencil width
  kstart = 1
  if (ibc(5)==4.or.ibc(5)==8) then
@@ -1029,13 +1029,13 @@ subroutine euler_k
       evmax(m) = -1.
      enddo
      do l=1,ng2 ! LLF
-      ll = k + l - lmax
+      ll = k + l - iweno
       do  m=1,5
        evmax(m) = max(ev(m,ll),evmax(m))
       enddo
      enddo
      do l=1,ng2 ! loop over the stencil centered at face k
-      ll = k + l - lmax
+      ll = k + l - iweno
       do m=1,5
        wc = 0.
        gc = 0.
@@ -1226,8 +1226,8 @@ end subroutine euler_k
         real(mykind) :: fl_gpu(nx,ny,nz,nv)
         real(mykind) :: dcoe_gpu(4,4)
         real(mykind) :: dcsidx_gpu(nx), detady_gpu(ny), dzitdz_gpu(nz)
-        real(mykind) :: gplus(5,2*ng,ny,nz)
-        real(mykind) :: gminus(5,2*ng,ny,nz)
+        real(mykind) :: gplus(5,2*iweno,ny,nz)
+        real(mykind) :: gminus(5,2*iweno,ny,nz)
 
         real(mykind) :: fl_trans_gpu(1:ny,1:nx,1:nz,nv)
         real(mykind) :: fhat_trans_gpu(1-ng:ny+ng,1-ng:nx+ng,1-ng:nz+ng,6)
@@ -1405,7 +1405,7 @@ end subroutine euler_k
                     evmax(m) = -1._mykind
                 enddo
                 do l=1,ng2 ! LLF
-                    ll = i + l - iorder/2
+                    ll = i + l - iweno
 !
                     rho  = wv_trans_gpu(j,ll,k,1)
                     rhou = wv_trans_gpu(j,ll,k,2)*rho
@@ -1424,7 +1424,7 @@ end subroutine euler_k
                     enddo
                 enddo
                 do l=1,ng2 ! loop over the stencil centered at face i
-                    ll = i + l - iorder/2
+                    ll = i + l - iweno
 
                     rho  = wv_trans_gpu(j,ll,k,1)
                     rhou = wv_trans_gpu(j,ll,k,2)*rho
@@ -1607,8 +1607,8 @@ end subroutine euler_k
         real(mykind) :: fl_gpu(nx,ny,nz,nv)
         real(mykind) :: dcoe_gpu(4,4)
         real(mykind) :: dcsidx_gpu(nx), detady_gpu(ny), dzitdz_gpu(nz)
-        real(mykind) :: gplus(5,2*ng,nx,nz)
-        real(mykind) :: gminus(5,2*ng,nx,nz)
+        real(mykind) :: gplus(5,2*iweno,nx,nz)
+        real(mykind) :: gminus(5,2*iweno,nx,nz)
         ! Local variables
         integer :: i, j, k, jm, m, jj, l, ip, jp, ll, mm
         logical :: ishk
@@ -1801,7 +1801,7 @@ end subroutine euler_k
                     evmax(m) = -1._mykind
                 enddo
                 do l=1,ng2 ! LLF
-                    ll = j + l - iorder/2
+                    ll = j + l - iweno
 !
                     rho  = w_gpu(i,ll,k,1)
                     rhov = w_gpu(i,ll,k,3)
@@ -1820,7 +1820,7 @@ end subroutine euler_k
                     enddo
                 enddo
                 do l=1,ng2 ! loop over the stencil centered at face i
-                    ll = j + l - iorder/2
+                    ll = j + l - iweno
 
                     rho  = w_gpu(i,ll,k,1)
                     rhov = w_gpu(i,ll,k,3)
@@ -1978,8 +1978,8 @@ end subroutine euler_k
         real(mykind) :: fl_gpu(nx,ny,nz,nv)
         real(mykind) :: dcoe_gpu(4,4)
         real(mykind) :: dcsidx_gpu(nx), detady_gpu(ny), dzitdz_gpu(nz)
-        real(mykind) :: gplus(5,2*ng,nx,ny)
-        real(mykind) :: gminus(5,2*ng,nx,ny)
+        real(mykind) :: gplus(5,2*iweno,nx,ny)
+        real(mykind) :: gminus(5,2*iweno,nx,ny)
         ! Local variables
         integer :: i, j, k, km, m, kk, l, ip, jp, kp, ll, mm
         logical :: ishk
@@ -2156,7 +2156,7 @@ end subroutine euler_k
                     evmax(m) = -1._mykind
                 enddo
                 do l=1,ng2 ! LLF
-                    ll = k + l - iorder/2
+                    ll = k + l - iweno
 !
                     rho  = w_gpu(i,j,ll,1)
                     rhow = w_gpu(i,j,ll,4)
@@ -2175,7 +2175,7 @@ end subroutine euler_k
                     enddo
                 enddo
                 do l=1,ng2 ! loop over the stencil centered at face i
-                    ll = k + l - iorder/2
+                    ll = k + l - iweno
 
                     rho  = w_gpu(i,j,ll,1)
                     rhow = w_gpu(i,j,ll,4)

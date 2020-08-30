@@ -39,12 +39,12 @@ subroutine allocate_vars()
  allocate(bz_df_gpu(3,ny,-nfmax:nfmax))
  allocate(amat_df_gpu(3,3,ny))
 
- allocate(gplus_x(5,2*ng,ny,nz))
- allocate(gminus_x(5,2*ng,ny,nz))
- allocate(gplus_y(5,2*ng,nx,nz))
- allocate(gminus_y(5,2*ng,nx,nz))
- allocate(gplus_z(5,2*ng,nx,ny))
- allocate(gminus_z(5,2*ng,nx,ny))
+ allocate(gplus_x (5,2*iweno,ny,nz))
+ allocate(gminus_x(5,2*iweno,ny,nz))
+ allocate(gplus_y (5,2*iweno,nx,nz))
+ allocate(gminus_y(5,2*iweno,nx,nz))
+ allocate(gplus_z (5,2*iweno,nx,ny))
+ allocate(gminus_z(5,2*iweno,nx,ny))
 #endif
 !
  allocate(wv_gpu(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,nv))

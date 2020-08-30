@@ -15,11 +15,6 @@ subroutine init_windtunnel
     w(3,i,j,k) = winf(3)
     w(4,i,j,k) = winf(4)
     w(5,i,j,k) = winf(5)
-!   w(1,i,j,k) = rho0
-!   w(2,i,j,k) = 0._mykind
-!   w(3,i,j,k) = 0._mykind
-!   w(4,i,j,k) = 0._mykind
-!   w(5,i,j,k) = gm*p0
    enddo
   enddo
  enddo

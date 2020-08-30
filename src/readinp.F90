@@ -50,10 +50,6 @@ subroutine readinp
   ibc(2) = 4
   ibc(3) = 4
   ibc(4) = 4
-! ibc(1) = 2
-! ibc(2) = 2
-! ibc(3) = 2
-! ibc(4) = 2
  case (0)
   ibc(3) = 5
   ibc(4) = 5
