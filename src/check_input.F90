@@ -23,6 +23,24 @@ subroutine check_input(step)
   if (iflow < -1 .or. iflow > 2) then
    call fail_input("iflow must be -1, 0, 1, or 2")
   endif 
+  if (mod(iorder,2)/=0) then
+   call fail_input("iorder must be even")
+  endif
+  if (mod(ivis,2)/=0) then
+   call fail_input("ivis must be even")
+  endif
+  if (iorder>2*ng) then
+   call fail_input("iorder cannot be greater than 2*ng")
+  endif
+  if (iorder>8) then
+   call fail_input("iorder cannot be greater than 8")
+  endif
+  if (ivis>iorder) then
+   call fail_input("ivis cannot be greater than iorder")
+  endif
+  if (iweno>iorder/2) then
+   call fail_input("iweno cannot be greater than iorder/2")
+  endif
   if (nblocks(1) <= 0 .or. nblocks(3) <= 0) then
    call fail_input("nblocks must be integer numbers greater than 0")
   endif
