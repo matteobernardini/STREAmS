@@ -25,14 +25,6 @@ subroutine generategrid
   do k=1-ng,nzmax+ng
    zg(k) = (k-1)*dz
   enddo
-  if (masterproc) then
-   write(*,*) 'Delta z+ = ', dz*retauinflow
-   open(18,file='z.dat')
-   do k=1-ng,nzmax+ng
-    write(18,*) zg(k)
-   enddo
-   close(18)
-  endif
  endif
 !
  select case (iflow)
@@ -172,6 +164,12 @@ subroutine generategrid
    open(18,file='y.dat')
    do j=1-ng,nymax+ng
     write(18,*) yg(j)
+   enddo
+   close(18)
+   write(*,*) 'Delta z+ = ', dz*retauinflow
+   open(18,file='z.dat')
+   do k=1-ng,nzmax+ng
+    write(18,*) zg(k)
    enddo
    close(18)
    if (iflow==0) then
