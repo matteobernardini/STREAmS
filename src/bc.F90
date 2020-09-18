@@ -32,6 +32,7 @@ subroutine bc(inr)
 !
    do ilat=1,2*ndim ! loop on all sides of the boundary (3D -> 6, 2D -> 4)
     if (ibc(ilat)==1) call bcfree(ilat)
+    if (ibc(ilat)==2) call bcextr(ilat)
     if (ibc(ilat)==4) call bcextr(ilat)
     if (ibc(ilat)==5) call bcwall_staggered(ilat)
     if (ibc(ilat)==6) call bcwall(ilat)

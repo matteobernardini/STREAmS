@@ -85,6 +85,9 @@ subroutine startmpi
  pbc(1) = .false.
  pbc(2) = .false.
  pbc(3) = .true.
+ if (iflow==-1) then ! Wind tunnel
+  pbc(3) = .false.
+ endif
  if (iflow==0) then ! Channel flow (periodicity also applied in x)
   pbc(1) = .true.
  endif

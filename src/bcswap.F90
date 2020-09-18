@@ -174,18 +174,32 @@ subroutine bcswap
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (ndim==3) then
-  !$cuf kernel do(3) <<<*,*>>>
-  do k=1,ng
-   do j=1,ny
-    do i=1,nx
-     do m=1,nv
-      w_gpu(i,j,k-ng,m) = wbuf5r_gpu(i,j,k,m)
-      w_gpu(i,j,nz+k,m) = wbuf6r_gpu(i,j,k,m)
+  if (ileftz/=mpi_proc_null) then
+   !$cuf kernel do(3) <<<*,*>>>
+   do k=1,ng
+    do j=1,ny
+     do i=1,nx
+      do m=1,nv
+       w_gpu(i,j,k-ng,m) = wbuf5r_gpu(i,j,k,m)
+      enddo
      enddo
     enddo
    enddo
-  enddo
-  !@cuf iercuda=cudaDeviceSynchronize()
+   !@cuf iercuda=cudaDeviceSynchronize()
+  endif
+  if (irightz/=mpi_proc_null) then
+   !$cuf kernel do(3) <<<*,*>>>
+   do k=1,ng
+    do j=1,ny
+     do i=1,nx
+      do m=1,nv
+       w_gpu(i,j,nz+k,m) = wbuf6r_gpu(i,j,k,m)
+      enddo
+     enddo
+    enddo
+   enddo
+   !@cuf iercuda=cudaDeviceSynchronize()
+  endif
  endif
 !
 end subroutine bcswap
@@ -387,18 +401,50 @@ subroutine bcswapdiv
   enddo
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
- if (ndim==3) then
-  !$cuf kernel do(2) <<<*,*>>>
-  do j=1,ny
-   do i=1,nx
-    do k=1,ng
-     fhat_gpu(i,j,k-ng,6) = divbuf5r_gpu(i,j,k)
-     fhat_gpu(i,j,nz+k,6) = divbuf6r_gpu(i,j,k)
+ if (ndim==3) then ! ndim if
+  if (ileftz==mpi_proc_null) then
+   !$cuf kernel do(2) <<<*,*>>>
+   do j=1,ny
+    do i=1,nx
+     do k=1,ng
+      fhat_gpu(i,j,1-k,6) = 2._mykind*fhat_gpu(i,j,2-k,6)-fhat_gpu(i,j,3-k,6)
+     enddo
     enddo
    enddo
-  enddo
   !@cuf iercuda=cudaDeviceSynchronize()
- endif
+  else
+   !$cuf kernel do(2) <<<*,*>>>
+   do j=1,ny
+    do i=1,nx
+     do k=1,ng
+      fhat_gpu(i,j,k-ng,6) = divbuf5r_gpu(i,j,k)
+     enddo
+    enddo
+   enddo
+  !@cuf iercuda=cudaDeviceSynchronize()
+  endif
+  if (irightz==mpi_proc_null) then
+   !$cuf kernel do(2) <<<*,*>>>
+   do j=1,ny
+    do i=1,nx
+     do k=1,ng
+      fhat_gpu(i,j,nz+k,6) = 2._mykind*fhat_gpu(i,j,nz+k-1,6)-fhat_gpu(i,j,nz+k-2,6)
+     enddo
+    enddo
+   enddo
+   !@cuf iercuda=cudaDeviceSynchronize()
+  else
+   !$cuf kernel do(2) <<<*,*>>>
+   do j=1,ny
+    do i=1,nx
+     do k=1,ng
+      fhat_gpu(i,j,nz+k,6) = divbuf6r_gpu(i,j,k)
+     enddo
+    enddo
+   enddo
+   !@cuf iercuda=cudaDeviceSynchronize()
+  endif
+ endif ! ndim if
 !
 end subroutine bcswapdiv
 !
@@ -554,16 +600,28 @@ subroutine bcswapduc
   !@cuf iercuda=cudaDeviceSynchronize()
  endif
  if (ndim==3) then
-  !$cuf kernel do(3) <<<*,*>>>
-  do k=1,ng
-   do j=1,ny
-    do i=1,nx
-     ducros_gpu(i,j,k-ng) = ducbuf5r_gpu(i,j,k)
-     ducros_gpu(i,j,nz+k) = ducbuf6r_gpu(i,j,k)
+  if (ileftz/=mpi_proc_null) then
+   !$cuf kernel do(3) <<<*,*>>>
+   do k=1,ng
+    do j=1,ny
+     do i=1,nx
+      ducros_gpu(i,j,k-ng) = ducbuf5r_gpu(i,j,k)
+     enddo
     enddo
    enddo
-  enddo
-  !@cuf iercuda=cudaDeviceSynchronize()
+   !@cuf iercuda=cudaDeviceSynchronize()
+  endif
+  if (irightz/=mpi_proc_null) then
+   !$cuf kernel do(3) <<<*,*>>>
+   do k=1,ng
+    do j=1,ny
+     do i=1,nx
+      ducros_gpu(i,j,nz+k) = ducbuf6r_gpu(i,j,k)
+     enddo
+    enddo
+   enddo
+   !@cuf iercuda=cudaDeviceSynchronize()
+  endif
  endif
 !
 end subroutine bcswapduc

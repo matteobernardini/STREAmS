@@ -48,8 +48,10 @@ subroutine readinp
  case (-1)
   ibc(1) = 1
   ibc(2) = 4
-  ibc(3) = 4
-  ibc(4) = 4
+  ibc(3) = 2
+  ibc(4) = 2
+  ibc(5) = 2
+  ibc(6) = 2
  case (0)
   ibc(3) = 5
   ibc(4) = 5
