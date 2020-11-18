@@ -112,7 +112,7 @@ subroutine writestatchann
                  vv2/utau**2,&        !v2^+
                  ww2/utau**2,&        !w2^+
                  uv /utau**2,&        !uv^+
-                 w1dh(5,j),  &        !T/T_w
+                 w1dh(6,j),  &        !T/T_w
                  rho2/rhow,  &        !rho2/rhow
                  tt2                  !T2/T_w
 
