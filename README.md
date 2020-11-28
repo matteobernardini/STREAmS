@@ -68,11 +68,11 @@ Some examples of input.dat files are available in the `examples` folder.
 
 To run a simulation, type, e.g.:
 ```
-mpirun -np 8 ./streams
+mpirun -np 8 ./streams.exe
 ```
 or (for SLURM jobs)
 ```
-srun ./streams
+srun ./streams.exe
 ```
 
 For CUDA versions in cluster environments, you must distribute MPI processes according to the number of GPUs 
@@ -92,7 +92,7 @@ available for each node. For CINECA Marconi-100 cluster -- 4 GPUS per node --  a
 
 module load profile/global hpc-sdk/20.5--binary
 
-mpirun -np 8 ./streams
+mpirun -np 8 ./streams.exe
 ```
 
 For CSCS Pitz-Daint cluster -- 1 GPU per node -- a possible submission script using 8 GPUs is:
@@ -106,7 +106,7 @@ For CSCS Pitz-Daint cluster -- 1 GPU per node -- a possible submission script us
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=gpu 
 module swap PrgEnv-cray PrgEnv-pgi
-srun ./streams
+srun ./streams.exe
 ```
 
 # Preparing input.dat file
