@@ -170,8 +170,10 @@ Typical input files for canonical flow cases are available.
  4) pressure gradient,
  5) bulk density (conserved to machine accuracy), 
  6) bulk flow velocity (conserved to machine accuracy),
- 7) bulk temperature. 
+ 7) bulk temperature.
+ 
  For instance, plotting the fourth column vs. the second allows the user to check the time history of the pressure gradient.
+ 
 ### Mean flow statistics `channstat.prof`
     The file `channstat.prof` contains the mean channel flow statistics.
     This file is printed at the end of each run and it contains the mean flow statistics averaged
