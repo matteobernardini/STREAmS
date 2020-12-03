@@ -203,7 +203,7 @@ Typical input files for canonical flow cases are available.
 3) <img src="svgs/b91858acbc5918f19aa579c1c71a454a.svg?invert_in_darkmode" align=middle width=19.26441pt height=22.83138pt/> friction Reynolds number 
 4) <img src="svgs/7b9a0316a2fcd7f01cfd556eedf72e96.svg?invert_in_darkmode" align=middle width=14.999985pt height=22.46574pt/> Compressible shape factor
 5) <img src="svgs/b76f125299e13d61d8c9b80929221c5f.svg?invert_in_darkmode" align=middle width=32.316075pt height=22.46574pt/> Incompressible shape factor 
-6) <img src="svgs/018562a8c71022027090ab072944bb8e.png?invert_in_darkmode" align=middle width=43.310685pt height=24.6576pt/> boundary layer thickness, normalized with the inlet boundary layer thickness
+6) <img src="svgs/018562a8c71022027090ab072944bb8e.svg?invert_in_darkmode" align=middle width=43.310685pt height=24.6576pt/> boundary layer thickness, normalized with the inlet boundary layer thickness
 7) <img src="svgs/27e556cf3caa0673ac49a8f0de3c73ca.svg?invert_in_darkmode" align=middle width=8.1735885pt height=22.83138pt/> Compressible displacement thickness
 8) <img src="svgs/19889dd126af8c9b2d5d30c60cb5606d.svg?invert_in_darkmode" align=middle width=26.368485pt height=22.83138pt/> Compressible momentum thickness
 9) <img src="svgs/89144b2a5e5b3f3a3663daf61886c11b.svg?invert_in_darkmode" align=middle width=16.80261pt height=14.15535pt/> friction velocity
