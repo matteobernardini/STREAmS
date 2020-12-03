@@ -20,7 +20,7 @@ subroutine setup
   call readgrid()
  endif
  call computemetrics()
- if (idiski==0 .and. enable_plot3d > 0) call writegridplot3d()
+ if (enable_plot3d>0) call writegridplot3d()
 !===================================================
  call constants()
 !===================================================

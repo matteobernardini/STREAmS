@@ -80,7 +80,7 @@ subroutine rk
   call bcswapdiv()
   if (ndim==3) call euler_k()
 !
-  if (istep == 3 .and. tresduc<1._mykind) then
+  if (istep==3.and.tresduc>0._mykind.and.tresduc<1._mykind) then
    call sensor()
    call bcswapduc_prepare()
    call visflx_div() ! No Cuda Sync here
@@ -96,7 +96,7 @@ subroutine rk
   call visflx()
   call bcswapdiv_prepare()
   call bcswapdiv()
-  if (istep == 3 .and. tresduc<1.) then
+  if (istep==3.and.tresduc>0._mykind.and.tresduc<1._mykind) then
    call sensor()
    call bcswapduc_prepare()
    call bcswapduc()

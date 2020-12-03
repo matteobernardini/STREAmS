@@ -16,7 +16,7 @@ subroutine bcwall(ilat)
     w_gpu(i,1,k,2) = 0._mykind 
     w_gpu(i,1,k,3) = 0._mykind
     w_gpu(i,1,k,4) = 0._mykind 
-    w_gpu(i,1,k,5) = w_gpu(i,1,k,1)*gm*taw*trat
+    w_gpu(i,1,k,5) = w_gpu(i,1,k,1)*gm*twall
     do l=1,ng
      w_gpu(i,1-l,k,1) =    w_gpu(i,1+l,k,1) ! rho   is even
      w_gpu(i,1-l,k,2) = 2._mykind*w_gpu(i,1,k,2) - w_gpu(i,1+l,k,2) ! rho*u is odd	
@@ -34,7 +34,7 @@ subroutine bcwall(ilat)
     w_gpu(i,ny,k,2) = 0._mykind 
     w_gpu(i,ny,k,3) = 0._mykind
     w_gpu(i,ny,k,4) = 0._mykind 
-    w_gpu(i,ny,k,5) = w_gpu(i,ny,k,1)*gm*taw*trat
+    w_gpu(i,ny,k,5) = w_gpu(i,ny,k,1)*gm*twall
     do l=1,ng
      w_gpu(i,ny+l,k,1) =    w_gpu(i,ny-l,k,1) ! rho   is even
      w_gpu(i,ny+l,k,2) = 2._mykind*w_gpu(i,ny,k,2) - w_gpu(i,ny-l,k,2) ! rho*u is odd	

@@ -19,13 +19,14 @@ subroutine init
  do k=1-ng,nz+ng
   do j=1-ng,ny+ng
    do i=1-ng,nx+ng
-    ducros(i,j,k) = .false.
     do m=1,nv
      w(m,i,j,k) = winf(m)
     enddo
    enddo
   enddo
  enddo
+ ducros = .false.
+ if (tresduc<=0._mykind) ducros = .true.
 !
  if (idiski>=1) then
 !

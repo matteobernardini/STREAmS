@@ -41,9 +41,10 @@ subroutine constants
  p0   = 1._mykind
  t0   = 1._mykind
 !
-! Adiabatic wall temperature
+! Adiabatic wall temperature and effective wall temperature
 !
- taw  = t0*(1._mykind+0.5_mykind*gm1*rm*rm*rfac)
+ taw = t0*(1._mykind+0.5_mykind*gm1*rm*rm*rfac)
+ twall = taw*trat
 !
 ! winf is the vector of conservative variables at freestream conditions
 !

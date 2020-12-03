@@ -131,7 +131,7 @@ subroutine euler_i(istart, iend)
   enddo
 #endif
 
-  if(tresduc < 1.0_mykind) then
+  if (tresduc<1._mykind) then
    n_th_x = EULERWENO_THREADS_X
    n_th_y = EULERWENO_THREADS_Y
    tBlock = dim3(n_th_x,n_th_y,1)
@@ -190,18 +190,18 @@ subroutine euler_i(istart, iend)
     rhov =  w_gpu(i,j,k,3)
     rhow =  w_gpu(i,j,k,4)
     rhoe =  w_gpu(i,j,k,5)
-    ri   =  1./rho
+    ri   =  1._mykind/rho
     uu   =  rhou*ri
     vv   =  rhov*ri
     ww   =  rhow*ri
-    qq   =  0.5*(uu*uu+vv*vv+ww*ww)
+    qq   =  0.5_mykind*(uu*uu+vv*vv+ww*ww)
     pp   =  rho*temperature_gpu(i,j,k)
     ent  =  (rhoe+pp)*ri
     do m=1,5
      u(m,i) = uu
     enddo
-    u(6,i) = 1.
-    v(1,i) = 1.
+    u(6,i) = 1._mykind
+    v(1,i) = 1._mykind
     v(2,i) = uu
     v(3,i) = vv
     v(4,i) = ww
@@ -247,18 +247,18 @@ subroutine euler_i(istart, iend)
    do i=0,endi ! i is the index of intermediate nodes
 !
     if (ishk(i)==0) then
-     ft = 0.
+     ft = 0._mykind
      do l=1,lmax
-      uvs = 0.
+      uvs = 0._mykind
       do n=0,l-1
        uvs = uvs + uv(:,l,i-n)
       enddo
       ft = ft + dcoe_gpu(l,lmax)*uvs
      enddo
      do m=1,5
-      fh(m) = 0.25*ft(m)
+      fh(m) = 0.25_mykind*ft(m)
      enddo
-     fh(2) = fh(2) + 0.5*ft(6)
+     fh(2) = fh(2) + 0.5_mykind*ft(6)
 !
      fhat_gpu(i,j,k,1:5) = fh(:)
 !
@@ -269,88 +269,88 @@ subroutine euler_i(istart, iend)
 !    Compute Roe average
 !
 !    Left state (node i)
-     ri        =  1./ui(1,i)
+     ri        =  1._mykind/ui(1,i)
      uu        =  ui(2,i) * ri
      vv        =  ui(3,i) * ri
      ww        =  ui(4,i) * ri
-     qq        =  0.5 * (uu*uu  +vv*vv + ww*ww)
+     qq        =  0.5_mykind * (uu*uu  +vv*vv + ww*ww)
 !    pp        =  gm1 * (ui(5,i) - ui(1,i) * qq)
 !    h         =  (ui(5,i)  + pp) * ri
      h         =  gamma*ui(5,i)*ri-gm1*qq
 !    Right state (node i+1)
-     rip       =  1./ui(1,ip)
+     rip       =  1._mykind/ui(1,ip)
      up        =  ui(2,ip) * rip
      vp        =  ui(3,ip) * rip
      wp        =  ui(4,ip) * rip
-     qqp       =  0.5 * (up*up  +vp*vp +wp*wp)
+     qqp       =  0.5_mykind * (up*up  +vp*vp +wp*wp)
 !    ppp       =  gm1 * (ui(5,ip) - ui(1,ip) * qqp)
 !    hp        =  (ui(5,ip)  + ppp) * rip
      hp        =  gamma*ui(5,ip)*rip-gm1*qqp
 !    average state
      r         =  ui(1,ip)*ri
      r         =  sqrt(r)
-     rp1       =  1./(r  +1.)
+     rp1       =  1._mykind/(r  +1._mykind)
      uu        =  (r*up  +uu)*rp1
      vv        =  (r*vp  +vv)*rp1
      ww        =  (r*wp  +ww)*rp1
      h         =  (r*hp  +h)*rp1
-     qq        =  0.5 * (uu*uu  +vv*vv + ww*ww)
+     qq        =  0.5_mykind * (uu*uu  +vv*vv + ww*ww)
      cc        =  gm1 * (h - qq)
      c         =  sqrt(cc)
-     ci        =  1./c
+     ci        =  1._mykind/c
 !
 !    left eigenvectors matrix (at Roe state)
 !
      b2        =   gm1/cc
      b1        =   b2 * qq
-     el(1,1)   =   0.5 * (b1     + uu * ci)
-     el(2,1)   =  -0.5 * (b2 * uu +     ci)
-     el(3,1)   =  -0.5 * (b2 * vv         )
-     el(4,1)   =  -0.5 * (b2 * ww         )
-     el(5,1)   =   0.5 * b2
-     el(1,2)   =   1. - b1
+     el(1,1)   =   0.5_mykind * (b1     + uu * ci)
+     el(2,1)   =  -0.5_mykind * (b2 * uu +     ci)
+     el(3,1)   =  -0.5_mykind * (b2 * vv         )
+     el(4,1)   =  -0.5_mykind * (b2 * ww         )
+     el(5,1)   =   0.5_mykind * b2
+     el(1,2)   =   1._mykind - b1
      el(2,2)   =   b2*uu
      el(3,2)   =   b2*vv
      el(4,2)   =   b2*ww
      el(5,2)   =  -b2
-     el(1,3)   =   0.5 * (b1     - uu * ci)
-     el(2,3)   =  -0.5 * (b2 * uu -     ci)
-     el(3,3)   =  -0.5 * (b2 * vv         )
-     el(4,3)   =  -0.5 * (b2 * ww         )
-     el(5,3)   =   0.5 * b2
+     el(1,3)   =   0.5_mykind * (b1     - uu * ci)
+     el(2,3)   =  -0.5_mykind * (b2 * uu -     ci)
+     el(3,3)   =  -0.5_mykind * (b2 * vv         )
+     el(4,3)   =  -0.5_mykind * (b2 * ww         )
+     el(5,3)   =   0.5_mykind * b2
      el(1,4)   =  -vv
-     el(2,4)   =   0.
-     el(3,4)   =   1.
-     el(4,4)   =   0.
-     el(5,4)   =   0.
+     el(2,4)   =   0._mykind
+     el(3,4)   =   1._mykind
+     el(4,4)   =   0._mykind
+     el(5,4)   =   0._mykind
      el(1,5)   =  -ww
-     el(2,5)   =   0.
-     el(3,5)   =   0.
-     el(4,5)   =   1.
-     el(5,5)   =   0.
+     el(2,5)   =   0._mykind
+     el(3,5)   =   0._mykind
+     el(4,5)   =   1._mykind
+     el(5,5)   =   0._mykind
 !
 !    right eigenvectors matrix (at Roe state)
 !
-     er(1,1)   =  1.
-     er(2,1)   =  1.
-     er(3,1)   =  1.
-     er(4,1)   =  0.
-     er(5,1)   =  0.
+     er(1,1)   =  1._mykind
+     er(2,1)   =  1._mykind
+     er(3,1)   =  1._mykind
+     er(4,1)   =  0._mykind
+     er(5,1)   =  0._mykind
      er(1,2)   =  uu -  c
      er(2,2)   =  uu
      er(3,2)   =  uu +  c
-     er(4,2)   =  0.
-     er(5,2)   =  0.
+     er(4,2)   =  0._mykind
+     er(5,2)   =  0._mykind
      er(1,3)   =  vv
      er(2,3)   =  vv
      er(3,3)   =  vv
-     er(4,3)   =  1.
-     er(5,3)   =  0.
+     er(4,3)   =  1._mykind
+     er(5,3)   =  0._mykind
      er(1,4)   =  ww
      er(2,4)   =  ww
      er(3,4)   =  ww
-     er(4,4)   =  0.
-     er(5,4)   =  1.
+     er(4,4)   =  0._mykind
+     er(5,4)   =  1._mykind
      er(1,5)   =  h  - uu * c
      er(2,5)   =  qq
      er(3,5)   =  h  + uu * c
@@ -358,7 +358,7 @@ subroutine euler_i(istart, iend)
      er(5,5)   =  ww
 
      do  m=1,5 ! loop on characteristic fields
-      evmax(m) = -1.
+      evmax(m) = -1._mykind
      enddo
      do l=1,ng2 ! LLF
       ll = i + l - iweno
@@ -369,13 +369,13 @@ subroutine euler_i(istart, iend)
      do l=1,ng2 ! loop over the stencil centered at face i
       ll = i + l - iweno
       do m=1,5
-       wc = 0.
-       gc = 0.
+       wc = 0._mykind
+       gc = 0._mykind
        do mm=1,5
         wc = wc + el(mm,m) * ui(mm,ll)
         gc = gc + el(mm,m) * fi(mm,ll)
        enddo
-       gplus (m,l)   = 0.5 * (gc + evmax(m) * wc)
+       gplus (m,l)   = 0.5_mykind * (gc + evmax(m) * wc)
        gminus(m,l)   = gc - gplus(m,l)
       enddo
      enddo
@@ -390,7 +390,7 @@ subroutine euler_i(istart, iend)
 !
 !   Return to conservative fluxes
      do m=1,5
-      fhat_gpu(i,j,k,m) = 0.
+      fhat_gpu(i,j,k,m) = 0._mykind
       do mm=1,5
        fhat_gpu(i,j,k,m) = fhat_gpu(i,j,k,m) + er(mm,m) * ghat(mm)
       enddo
@@ -410,12 +410,12 @@ subroutine euler_i(istart, iend)
 !  Boundary closures
 !  if (ibc(1)==1.or.ibc(1)==9) then
 !   do m=1,5
-!    df(m,1) = 0.
+!    df(m,1) = 0._mykind
 !   enddo
 !  endif
 !LEVATO   if (ibc(2)==4.or.ibc(2)==8) then
 !LEVATO    do m=1,5
-!LEVATO     df(m,endi) = 0.
+!LEVATO     df(m,endi) = 0._mykind
 !LEVATO    enddo
 !LEVATO   endif
 !
@@ -488,7 +488,7 @@ subroutine euler_j
 !
 #ifdef USE_CUDA
 !   st = mpi_wtime()
-    if(tresduc < 1._mykind) then
+    if (tresduc<1._mykind) then
      n_th_x = EULERWENO_THREADS_X
      n_th_y = EULERWENO_THREADS_Y
      tBlock = dim3(n_th_x,n_th_y,1)
@@ -525,18 +525,18 @@ subroutine euler_j
     rhov =  w_gpu(i,j,k,3)
     rhow =  w_gpu(i,j,k,4)
     rhoe =  w_gpu(i,j,k,5)
-    ri   =  1./rho
+    ri   =  1._mykind/rho
     uu   =  rhou*ri
     vv   =  rhov*ri
     ww   =  rhow*ri
-    qq   =  0.5*(uu*uu+vv*vv+ww*ww)
+    qq   =  0.5_mykind*(uu*uu+vv*vv+ww*ww)
     pp   =  rho*temperature_gpu(i,j,k)
     ent  =  (rhoe+pp)*ri
     do m=1,5
      u(m,j) = vv
     enddo
-    u(6,j) = 1.
-    v(1,j) = 1.
+    u(6,j) = 1._mykind
+    v(1,j) = 1._mykind
     v(2,j) = uu
     v(3,j) = vv
     v(4,j) = ww
@@ -582,23 +582,23 @@ subroutine euler_j
    do j=0,endj ! j is the index of intermediate nodes
 !
     if (ishk(j)==0) then
-     ft = 0.
+     ft = 0._mykind
      do l=1,lmax
-      uvs = 0.
+      uvs = 0._mykind
       do n=0,l-1
        uvs = uvs + uv(:,l,j-n)
       enddo
       ft = ft + dcoe_gpu(l,lmax)*uvs
      enddo
      do m=1,5
-      fh(m) = 0.25*ft(m)
+      fh(m) = 0.25_mykind*ft(m)
      enddo
      if (iflow==0) then
       if (j==0.or.j==endj) then
        fh(:) = 0._mykind
       endif
      endif
-     fh(3) = fh(3) + 0.5*ft(6)
+     fh(3) = fh(3) + 0.5_mykind*ft(6)
 !
      fhat_gpu(i,j,k,1:5) = fh(:)
 !
@@ -608,88 +608,88 @@ subroutine euler_j
 !   Compute Roe average
 !
 !    Left state (node j)
-     ri        =  1./uj(1,j)
+     ri        =  1._mykind/uj(1,j)
      uu        =  uj(2,j) * ri
      vv        =  uj(3,j) * ri
      ww        =  uj(4,j) * ri
-     qq        =  0.5 * (uu*uu  +vv*vv + ww*ww)
+     qq        =  0.5_mykind * (uu*uu  +vv*vv + ww*ww)
 !    pp        =  gm1 * (uj(5,j) - uj(1,j) * qq)
 !    h         =  (uj(5,j)  + pp) * ri
      h         =  gamma*uj(5,j)*ri-gm1*qq
 !    Right state (node j+1)
-     rip       =  1./uj(1,jp)
+     rip       =  1._mykind/uj(1,jp)
      up        =  uj(2,jp) * rip
      vp        =  uj(3,jp) * rip
      wp        =  uj(4,jp) * rip
-     qqp       =  0.5 * (up*up  +vp*vp + wp*wp)
+     qqp       =  0.5_mykind * (up*up  +vp*vp + wp*wp)
 !    ppp       =  gm1 * (uj(5,jp) - uj(1,jp) * qqp)
 !    hp        =  (uj(5,jp)  + ppp) * rip
      hp        =  gamma*uj(5,jp)*rip-gm1*qqp
 !    average state
      r         =  uj(1,jp)*ri
      r         =  sqrt(r)
-     rp1       =  1./(r  +1.)
+     rp1       =  1._mykind/(r  +1._mykind)
      uu        =  (r*up  +uu)*rp1
      vv        =  (r*vp  +vv)*rp1
      ww        =  (r*wp  +ww)*rp1
      h         =  (r*hp  +h)*rp1
-     qq        =  0.5 * (uu*uu  + vv*vv + ww*ww)
+     qq        =  0.5_mykind * (uu*uu  + vv*vv + ww*ww)
      cc        =  gm1 * (h - qq)
      c         =  sqrt(cc)
-     ci        =  1./c
+     ci        =  1._mykind/c
 !
 !    left eigenvectors matrix (at Roe state)
 !
      b2        =   gm1/cc
      b1        =   b2 * qq
-     el(1,1)   =   0.5 * (b1     + vv * ci)
-     el(2,1)   =  -0.5 * (b2 * uu         )
-     el(3,1)   =  -0.5 * (b2 * vv +     ci)
-     el(4,1)   =  -0.5 * (b2 * ww         )
-     el(5,1)   =   0.5 * b2
-     el(1,2)   =   1. - b1
+     el(1,1)   =   0.5_mykind * (b1     + vv * ci)
+     el(2,1)   =  -0.5_mykind * (b2 * uu         )
+     el(3,1)   =  -0.5_mykind * (b2 * vv +     ci)
+     el(4,1)   =  -0.5_mykind * (b2 * ww         )
+     el(5,1)   =   0.5_mykind * b2
+     el(1,2)   =   1._mykind - b1
      el(2,2)   =   b2 * uu
      el(3,2)   =   b2 * vv
      el(4,2)   =   b2 * ww
      el(5,2)   =  -b2
-     el(1,3)   =   0.5 * (b1     - vv * ci)
-     el(2,3)   =  -0.5 * (b2 * uu         )
-     el(3,3)   =  -0.5 * (b2 * vv -     ci)
-     el(4,3)   =  -0.5 * (b2 * ww         )
-     el(5,3)   =   0.5 * b2
+     el(1,3)   =   0.5_mykind * (b1     - vv * ci)
+     el(2,3)   =  -0.5_mykind * (b2 * uu         )
+     el(3,3)   =  -0.5_mykind * (b2 * vv -     ci)
+     el(4,3)   =  -0.5_mykind * (b2 * ww         )
+     el(5,3)   =   0.5_mykind * b2
      el(1,4)   =  -ww
-     el(2,4)   =   0.
-     el(3,4)   =   0.
-     el(4,4)   =   1.
-     el(5,4)   =   0.
+     el(2,4)   =   0._mykind
+     el(3,4)   =   0._mykind
+     el(4,4)   =   1._mykind
+     el(5,4)   =   0._mykind
      el(1,5)   =   uu
-     el(2,5)   =  -1.
-     el(3,5)   =   0.
-     el(4,5)   =   0.
-     el(5,5)   =   0.
+     el(2,5)   =  -1._mykind
+     el(3,5)   =   0._mykind
+     el(4,5)   =   0._mykind
+     el(5,5)   =   0._mykind
 !
 !    right eigenvectors matrix (at Roe state)
 !
-     er(1,1)   =  1.
-     er(2,1)   =  1.
-     er(3,1)   =  1.
-     er(4,1)   =  0.
-     er(5,1)   =  0.
+     er(1,1)   =  1._mykind
+     er(2,1)   =  1._mykind
+     er(3,1)   =  1._mykind
+     er(4,1)   =  0._mykind
+     er(5,1)   =  0._mykind
      er(1,2)   =  uu
      er(2,2)   =  uu
      er(3,2)   =  uu
-     er(4,2)   =  0.
-     er(5,2)   = -1.
+     er(4,2)   =  0._mykind
+     er(5,2)   = -1._mykind
      er(1,3)   =  vv - c
      er(2,3)   =  vv
      er(3,3)   =  vv + c
-     er(4,3)   =  0.
-     er(5,3)   =  0.
+     er(4,3)   =  0._mykind
+     er(5,3)   =  0._mykind
      er(1,4)   =  ww
      er(2,4)   =  ww
      er(3,4)   =  ww
-     er(4,4)   =  1.
-     er(5,4)   =  0.
+     er(4,4)   =  1._mykind
+     er(5,4)   =  0._mykind
      er(1,5)   =  h  - vv * c
      er(2,5)   =  qq
      er(3,5)   =  h  + vv * c
@@ -697,7 +697,7 @@ subroutine euler_j
      er(5,5)   = -uu
 
      do  m=1,5 ! loop on characteristic fields
-      evmax(m) = -1.
+      evmax(m) = -1._mykind
      enddo
      do l=1,ng2 ! LLF
       ll = j + l - iweno
@@ -708,13 +708,13 @@ subroutine euler_j
      do l=1,ng2 ! loop over the stencil centered at face j
       ll = j + l - iweno
       do m=1,5
-       wc = 0.
-       gc = 0.
+       wc = 0._mykind
+       gc = 0._mykind
        do mm=1,5
         wc = wc + el(mm,m) * uj(mm,ll)
         gc = gc + el(mm,m) * fj(mm,ll)
        enddo
-       gplus (m,l)   = 0.5 * (gc + evmax(m) * wc)
+       gplus (m,l)   = 0.5_mykind * (gc + evmax(m) * wc)
        gminus(m,l)   = gc - gplus(m,l)
       enddo
      enddo
@@ -729,7 +729,7 @@ subroutine euler_j
 !
 !    Return to conservative fluxes
      do m=1,5
-      fhat_gpu(i,j,k,m) = 0.
+      fhat_gpu(i,j,k,m) = 0._mykind
       do mm=1,5
        fhat_gpu(i,j,k,m) = fhat_gpu(i,j,k,m) + er(mm,m) * ghat(mm)
       enddo
@@ -749,12 +749,12 @@ subroutine euler_j
 !  Boundary closures
 !   if (ibc(3)==4.or.ibc(3)==8) then
 !    do m=1,5
-!     df(m,1) = 0.
+!     df(m,1) = 0._mykind
 !    enddo
 !   endif
 !   if (ibc(4)==4.or.ibc(4)==7) then
 !    do m=1,5
-!     df(m,endj) = 0.
+!     df(m,endj) = 0._mykind
 !    enddo
 !   endif
 !
@@ -820,7 +820,7 @@ subroutine euler_k
 !
 #ifdef USE_CUDA
 !   st = mpi_wtime()
-    if(tresduc < 1._mykind) then
+    if (tresduc<1._mykind) then
      n_th_x = EULERWENO_THREADS_X
      n_th_y = EULERWENO_THREADS_Y
      tBlock = dim3(n_th_x,n_th_y,1)
@@ -858,18 +858,18 @@ subroutine euler_k
     rhov =  w_gpu(i,j,k,3)
     rhow =  w_gpu(i,j,k,4)
     rhoe =  w_gpu(i,j,k,5)
-    ri   =  1./rho
+    ri   =  1._mykind/rho
     uu   =  rhou*ri
     vv   =  rhov*ri
     ww   =  rhow*ri
-    qq   =  0.5*(uu*uu+vv*vv+ww*ww)
+    qq   =  0.5_mykind*(uu*uu+vv*vv+ww*ww)
     pp   =  rho*temperature_gpu(i,j,k)
     ent  =  (rhoe+pp)*ri
     do m=1,5
      u(m,k) = ww
     enddo
-    u(6,k) = 1.
-    v(1,k) = 1.
+    u(6,k) = 1._mykind
+    v(1,k) = 1._mykind
     v(2,k) = uu
     v(3,k) = vv
     v(4,k) = ww
@@ -915,18 +915,18 @@ subroutine euler_k
    do k=0,endk ! k is the index of intermediate nodes
 !
     if (ishk(k)==0) then
-     ft = 0.
+     ft = 0._mykind
      do l=1,lmax
-      uvs = 0.
+      uvs = 0._mykind
       do n=0,l-1
        uvs = uvs + uv(:,l,k-n)
       enddo
       ft = ft + dcoe_gpu(l,lmax)*uvs
      enddo
      do m=1,5
-      fh(m) = 0.25*ft(m)
+      fh(m) = 0.25_mykind*ft(m)
      enddo
-     fh(4) = fh(4) + 0.5*ft(6)
+     fh(4) = fh(4) + 0.5_mykind*ft(6)
 !
      fhat_gpu(i,j,k,1:5) = fh(:)
 !
@@ -937,88 +937,88 @@ subroutine euler_k
 !    Compute Roe average
 !
 !    Left state (node k)
-     ri        =  1./uk(1,k)
+     ri        =  1._mykind/uk(1,k)
      uu        =  uk(2,k) * ri
      vv        =  uk(3,k) * ri
      ww        =  uk(4,k) * ri
-     qq        =  0.5 * (uu*uu  +vv*vv + ww*ww)
+     qq        =  0.5_mykind * (uu*uu  +vv*vv + ww*ww)
 !    pp        =  gm1 * (uk(5,k) - uk(1,k) * qq)
 !    h         =  (uk(5,k)  + pp) * ri
      h         =  gamma*uk(5,k)*ri-gm1*qq
 !    Right state (node k+1)
-     rip       =  1./uk(1,kp)
+     rip       =  1._mykind/uk(1,kp)
      up        =  uk(2,kp) * rip
      vp        =  uk(3,kp) * rip
      wp        =  uk(4,kp) * rip
-     qqp       =  0.5 * (up*up  +vp*vp + wp*wp)
+     qqp       =  0.5_mykind * (up*up  +vp*vp + wp*wp)
 !    ppp       =  gm1 * (uk(5,kp) - uk(1,kp) * qqp)
 !    hp        =  (uk(5,kp)  + ppp) * rip
      hp        =  gamma*uk(5,kp)*rip-gm1*qqp
 !    average state
      r         =  uk(1,kp)*ri
      r         =  sqrt(r)
-     rp1       =  1./(r  +1.)
+     rp1       =  1._mykind/(r  +1._mykind)
      uu        =  (r*up  +uu)*rp1
      vv        =  (r*vp  +vv)*rp1
      ww        =  (r*wp  +ww)*rp1
      h         =  (r*hp  +h)*rp1
-     qq        =  0.5 * (uu*uu  + vv*vv + ww*ww)
+     qq        =  0.5_mykind * (uu*uu  + vv*vv + ww*ww)
      cc        =  gm1 * (h - qq)
      c         =  sqrt(cc)
-     ci        =  1./c
+     ci        =  1._mykind/c
 !
 !    left eigenvectors matrix (at Roe state)
 !
      b2        =   gm1/cc
      b1        =   b2 * qq
-     el(1,1)   =   0.5 * (b1     + ww * ci)
-     el(2,1)   =  -0.5 * (b2 * uu         )
-     el(3,1)   =  -0.5 * (b2 * vv         )
-     el(4,1)   =  -0.5 * (b2 * ww +     ci)
-     el(5,1)   =   0.5 * b2
-     el(1,2)   =   1. - b1
+     el(1,1)   =   0.5_mykind * (b1     + ww * ci)
+     el(2,1)   =  -0.5_mykind * (b2 * uu         )
+     el(3,1)   =  -0.5_mykind * (b2 * vv         )
+     el(4,1)   =  -0.5_mykind * (b2 * ww +     ci)
+     el(5,1)   =   0.5_mykind * b2
+     el(1,2)   =   1._mykind - b1
      el(2,2)   =   b2 * uu
      el(3,2)   =   b2 * vv
      el(4,2)   =   b2 * ww
      el(5,2)   =  -b2
-     el(1,3)   =   0.5 * (b1     - ww * ci)
-     el(2,3)   =  -0.5 * (b2 * uu         )
-     el(3,3)   =  -0.5 * (b2 * vv         )
-     el(4,3)   =  -0.5 * (b2 * ww -     ci)
-     el(5,3)   =   0.5 * b2
+     el(1,3)   =   0.5_mykind * (b1     - ww * ci)
+     el(2,3)   =  -0.5_mykind * (b2 * uu         )
+     el(3,3)   =  -0.5_mykind * (b2 * vv         )
+     el(4,3)   =  -0.5_mykind * (b2 * ww -     ci)
+     el(5,3)   =   0.5_mykind * b2
      el(1,4)   =  -uu
-     el(2,4)   =   1.
-     el(3,4)   =   0.
-     el(4,4)   =   0.
-     el(5,4)   =   0.
+     el(2,4)   =   1._mykind
+     el(3,4)   =   0._mykind
+     el(4,4)   =   0._mykind
+     el(5,4)   =   0._mykind
      el(1,5)   =  -vv
-     el(2,5)   =   0.
-     el(3,5)   =   1.
-     el(4,5)   =   0.
-     el(5,5)   =   0.
+     el(2,5)   =   0._mykind
+     el(3,5)   =   1._mykind
+     el(4,5)   =   0._mykind
+     el(5,5)   =   0._mykind
 !
 !   right eigenvectors matrix (at Roe state)
 !
-     er(1,1)   =  1.
-     er(2,1)   =  1.
-     er(3,1)   =  1.
-     er(4,1)   =  0.
-     er(5,1)   =  0.
+     er(1,1)   =  1._mykind
+     er(2,1)   =  1._mykind
+     er(3,1)   =  1._mykind
+     er(4,1)   =  0._mykind
+     er(5,1)   =  0._mykind
      er(1,2)   =  uu
      er(2,2)   =  uu
      er(3,2)   =  uu
-     er(4,2)   =  1.
-     er(5,2)   =  0.
+     er(4,2)   =  1._mykind
+     er(5,2)   =  0._mykind
      er(1,3)   =  vv
      er(2,3)   =  vv
      er(3,3)   =  vv
-     er(4,3)   =  0.
-     er(5,3)   =  1.
+     er(4,3)   =  0._mykind
+     er(5,3)   =  1._mykind
      er(1,4)   =  ww - c
      er(2,4)   =  ww
      er(3,4)   =  ww + c
-     er(4,4)   =  0.
-     er(5,4)   =  0.
+     er(4,4)   =  0._mykind
+     er(5,4)   =  0._mykind
      er(1,5)   =  h  - ww * c
      er(2,5)   =  qq
      er(3,5)   =  h  + ww * c
@@ -1026,7 +1026,7 @@ subroutine euler_k
      er(5,5)   =  vv
 
      do  m=1,5 ! loop on characteristic fields
-      evmax(m) = -1.
+      evmax(m) = -1._mykind
      enddo
      do l=1,ng2 ! LLF
       ll = k + l - iweno
@@ -1037,13 +1037,13 @@ subroutine euler_k
      do l=1,ng2 ! loop over the stencil centered at face k
       ll = k + l - iweno
       do m=1,5
-       wc = 0.
-       gc = 0.
+       wc = 0._mykind
+       gc = 0._mykind
        do mm=1,5
         wc = wc + el(mm,m) * uk(mm,ll)
         gc = gc + el(mm,m) * fk(mm,ll)
        enddo
-       gplus (m,l)   = 0.5 * (gc + evmax(m) * wc)
+       gplus (m,l)   = 0.5_mykind * (gc + evmax(m) * wc)
        gminus(m,l)   = gc - gplus(m,l)
       enddo
      enddo
@@ -1058,7 +1058,7 @@ subroutine euler_k
 !
 !   Return to conservative fluxes
      do m=1,5
-      fhat_gpu(i,j,k,m) = 0.
+      fhat_gpu(i,j,k,m) = 0._mykind
       do mm=1,5
        fhat_gpu(i,j,k,m) = fhat_gpu(i,j,k,m) + er(mm,m) * ghat(mm)
       enddo
@@ -1078,12 +1078,12 @@ subroutine euler_k
 !  Boundary closures
 !   if (ibc(5)==4.or.ibc(5)==8) then
 !    do m=1,5
-!     df(m,1)    = 0.
+!     df(m,1)    = 0._mykind
 !    enddo
 !   endif
 !   if (ibc(6)==4.or.ibc(6)==8) then
 !    do m=1,5
-!     df(m,endk) = 0.
+!     df(m,endk) = 0._mykind
 !    enddo
 !   endif
 !
@@ -1246,7 +1246,7 @@ end subroutine euler_k
         real(mykind) :: r, rp1, cc, c, ci, b1, b2
         real(mykind) :: gpr, pp
         real(mykind) :: df
-        ! ... for weno
+        ! for weno
         real(mykind), dimension(5) :: ev, evmax, fi, ghat, gl, gr
         real(mykind), dimension(5,5) :: el, er
         real(mykind) :: rho, rhou, wc, gc
@@ -1347,54 +1347,54 @@ end subroutine euler_k
 !
                 b2        =   gm1/cc
                 b1        =   b2 * qq
-                el(1,1)   =   0.5 * (b1     + uu * ci)
-                el(2,1)   =  -0.5 * (b2 * uu +     ci)
-                el(3,1)   =  -0.5 * (b2 * vv         )
-                el(4,1)   =  -0.5 * (b2 * ww         )
-                el(5,1)   =   0.5 * b2
-                el(1,2)   =   1. - b1
+                el(1,1)   =   0.5_mykind * (b1     + uu * ci)
+                el(2,1)   =  -0.5_mykind * (b2 * uu +     ci)
+                el(3,1)   =  -0.5_mykind * (b2 * vv         )
+                el(4,1)   =  -0.5_mykind * (b2 * ww         )
+                el(5,1)   =   0.5_mykind * b2
+                el(1,2)   =   1._mykind - b1
                 el(2,2)   =   b2*uu
                 el(3,2)   =   b2*vv
                 el(4,2)   =   b2*ww
                 el(5,2)   =  -b2
-                el(1,3)   =   0.5 * (b1     - uu * ci)
-                el(2,3)   =  -0.5 * (b2 * uu -     ci)
-                el(3,3)   =  -0.5 * (b2 * vv         )
-                el(4,3)   =  -0.5 * (b2 * ww         )
-                el(5,3)   =   0.5 * b2
+                el(1,3)   =   0.5_mykind * (b1     - uu * ci)
+                el(2,3)   =  -0.5_mykind * (b2 * uu -     ci)
+                el(3,3)   =  -0.5_mykind * (b2 * vv         )
+                el(4,3)   =  -0.5_mykind * (b2 * ww         )
+                el(5,3)   =   0.5_mykind * b2
                 el(1,4)   =  -vv
-                el(2,4)   =   0.
-                el(3,4)   =   1.
-                el(4,4)   =   0.
-                el(5,4)   =   0.
+                el(2,4)   =   0._mykind
+                el(3,4)   =   1._mykind
+                el(4,4)   =   0._mykind
+                el(5,4)   =   0._mykind
                 el(1,5)   =  -ww
-                el(2,5)   =   0.
-                el(3,5)   =   0.
-                el(4,5)   =   1.
-                el(5,5)   =   0.
+                el(2,5)   =   0._mykind
+                el(3,5)   =   0._mykind
+                el(4,5)   =   1._mykind
+                el(5,5)   =   0._mykind
 !
 !               right eigenvectors matrix (at Roe state)
 !
-                er(1,1)   =  1.
-                er(2,1)   =  1.
-                er(3,1)   =  1.
-                er(4,1)   =  0.
-                er(5,1)   =  0.
+                er(1,1)   =  1._mykind
+                er(2,1)   =  1._mykind
+                er(3,1)   =  1._mykind
+                er(4,1)   =  0._mykind
+                er(5,1)   =  0._mykind
                 er(1,2)   =  uu -  c
                 er(2,2)   =  uu
                 er(3,2)   =  uu +  c
-                er(4,2)   =  0.
-                er(5,2)   =  0.
+                er(4,2)   =  0._mykind
+                er(5,2)   =  0._mykind
                 er(1,3)   =  vv
                 er(2,3)   =  vv
                 er(3,3)   =  vv
-                er(4,3)   =  1.
-                er(5,3)   =  0.
+                er(4,3)   =  1._mykind
+                er(5,3)   =  0._mykind
                 er(1,4)   =  ww
                 er(2,4)   =  ww
                 er(3,4)   =  ww
-                er(4,4)   =  0.
-                er(5,4)   =  1.
+                er(4,4)   =  0._mykind
+                er(5,4)   =  1._mykind
                 er(1,5)   =  h  - uu * c
                 er(2,5)   =  qq
                 er(3,5)   =  h  + uu * c
@@ -1437,8 +1437,8 @@ end subroutine euler_k
                     fi(4)  = uu *  rho * wv_trans_gpu(j,ll,k,4)
                     fi(5)  = uu *  rho * wv_trans_gpu(j,ll,k,5) 
                     do m=1,5
-                        wc = 0.
-                        gc = 0.
+                        wc = 0._mykind
+                        gc = 0._mykind
 
                         do mm=1,1
                             wc = wc + el(mm,m) * rho
@@ -1452,7 +1452,7 @@ end subroutine euler_k
                             wc = wc + el(mm,m) * (wv_trans_gpu(j,ll,k,mm) * rho - pp)
                             gc = gc + el(mm,m) * fi(mm)
                         enddo
-                        gplus (m,l,j,k) = 0.5 * (gc + evmax(m) * wc)
+                        gplus (m,l,j,k) = 0.5_mykind * (gc + evmax(m) * wc)
                         gminus(m,l,j,k) = gc - gplus(m,l,j,k)
                     enddo
                 enddo
@@ -1467,7 +1467,7 @@ end subroutine euler_k
 
 !               !Return to conservative fluxes
                 do m=1,5
-                    fhat_trans_gpu(j,i,k,m) = 0.
+                    fhat_trans_gpu(j,i,k,m) = 0._mykind
                     do mm=1,5
                        fhat_trans_gpu(j,i,k,m) = fhat_trans_gpu(j,i,k,m) + er(mm,m) * ghat(mm)
                     enddo
@@ -1622,7 +1622,7 @@ end subroutine euler_k
         real(mykind) :: r, rp1, cc, c, ci, b1, b2
         real(mykind) :: gpr, pp
         real(mykind) :: df
-        ! ... for weno
+        ! for weno
         real(mykind), dimension(5) :: ev, evmax, fi, ghat, gl, gr
         real(mykind), dimension(5,5) :: el, er
         real(mykind) :: rho, rhov, wc, gc
@@ -1833,14 +1833,14 @@ end subroutine euler_k
                     fi(4)  = vv *  w_gpu(i,ll,k,4)
                     fi(5)  = vv * (w_gpu(i,ll,k,5)  + pp)
                     do m=1,5
-                        wc = 0.
-                        gc = 0.
+                        wc = 0._mykind
+                        gc = 0._mykind
 
                         do mm=1,5
                             wc = wc + el(mm,m) * w_gpu(i,ll,k,mm)
                             gc = gc + el(mm,m) * fi(mm)
                         enddo
-                        gplus (m,l,i,k) = 0.5 * (gc + evmax(m) * wc)
+                        gplus (m,l,i,k) = 0.5_mykind * (gc + evmax(m) * wc)
                         gminus(m,l,i,k) = gc - gplus(m,l,i,k)
                     enddo
                 enddo
@@ -1855,7 +1855,7 @@ end subroutine euler_k
 
 !               !Return to conservative fluxes
                 do m=1,5
-                    fhat_gpu(i,j,k,m) = 0.
+                    fhat_gpu(i,j,k,m) = 0._mykind
                     do mm=1,5
                        fhat_gpu(i,j,k,m) = fhat_gpu(i,j,k,m) + er(mm,m) * ghat(mm)
                     enddo
@@ -1993,7 +1993,7 @@ end subroutine euler_k
         real(mykind) :: r, rp1, cc, c, ci, b1, b2
         real(mykind) :: gpr, pp
         real(mykind) :: df
-        ! ... for weno
+        ! for weno
         real(mykind), dimension(5) :: ev, evmax, fi, ghat, gl, gr
         real(mykind), dimension(5,5) :: el, er
         real(mykind) :: rho, rhow, wc, gc
@@ -2188,14 +2188,14 @@ end subroutine euler_k
                     fi(4)  = ww *  w_gpu(i,j,ll,4)  + pp
                     fi(5)  = ww * (w_gpu(i,j,ll,5)  + pp)
                     do m=1,5
-                        wc = 0.
-                        gc = 0.
+                        wc = 0._mykind
+                        gc = 0._mykind
 
                         do mm=1,5
                             wc = wc + el(mm,m) * w_gpu(i,j,ll,mm)
                             gc = gc + el(mm,m) * fi(mm)
                         enddo
-                        gplus (m,l,i,j) = 0.5 * (gc + evmax(m) * wc)
+                        gplus (m,l,i,j) = 0.5_mykind * (gc + evmax(m) * wc)
                         gminus(m,l,i,j) = gc - gplus(m,l,i,j)
                     enddo
                 enddo
@@ -2210,7 +2210,7 @@ end subroutine euler_k
 
 !               !Return to conservative fluxes
                 do m=1,5
-                    fhat_gpu(i,j,k,m) = 0.
+                    fhat_gpu(i,j,k,m) = 0._mykind
                     do mm=1,5
                        fhat_gpu(i,j,k,m) = fhat_gpu(i,j,k,m) + er(mm,m) * ghat(mm)
                     enddo
@@ -2246,11 +2246,13 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
 !    Local variables
      real(mykind),dimension(-1:4) :: dwe           ! linear weights
      real(mykind),dimension(-1:4) :: alfp,alfm     ! alpha_l
+     real(mykind),dimension(-1:4) :: alfp_map,alfm_map ! alpha_l
      real(mykind),dimension(-1:4) :: betap,betam   ! beta_l
      real(mykind),dimension(-1:4) :: omp,omm       ! WENO weights
 !    
      integer :: r,i,j,k,l,m
      real(mykind) :: c0,c1,c2,c3,c4,d0,d1,d2,d3,d4,summ,sump
+     real(mykind) :: x,y,y2
 !    
      if (iweno==1) then ! Godunov
 !    
@@ -2263,8 +2265,8 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
 !    
          i = iweno ! index of intermediate node to perform reconstruction
 !    
-         dwe(1)   = 2./3.
-         dwe(0)   = 1./3.
+         dwe(1)   = 2._mykind/3._mykind
+         dwe(0)   = 1._mykind/3._mykind
 !    
          do m=1,nvar
 !    
@@ -2273,11 +2275,11 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
              betam(0)  = (vm(m,i+2)-vm(m,i+1))**2
              betam(1)  = (vm(m,i+1)-vm(m,i  ))**2
 !    
-             sump = 0.
-             summ = 0.
+             sump = 0._mykind
+             summ = 0._mykind
              do l=0,1
-                 alfp(l) = dwe(l)/(1.E-6+betap(l))**2
-                 alfm(l) = dwe(l)/(1.E-6+betam(l))**2
+                 alfp(l) = dwe(l)/(0.000001_mykind+betap(l))**2
+                 alfm(l) = dwe(l)/(0.000001_mykind+betam(l))**2
                  sump = sump + alfp(l)
                  summ = summ + alfm(l)
              enddo
@@ -2292,42 +2294,42 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
          enddo ! end of m-loop
 !    
          do m=1,nvar
-             vminus(m) = 0.5*vminus(m)
-             vplus(m)  = 0.5*vplus(m)
+             vminus(m) = 0.5_mykind*vminus(m)
+             vplus(m)  = 0.5_mykind*vplus(m)
          enddo
 !    
      elseif (iweno==3) then ! WENO-5
 !    
       i = iweno ! index of intermediate node to perform reconstruction
 !    
-      dwe( 0) = 1./10.
-      dwe( 1) = 6./10.
-      dwe( 2) = 3./10.
+      dwe( 0) = 1._mykind/10._mykind
+      dwe( 1) = 6._mykind/10._mykind
+      dwe( 2) = 3._mykind/10._mykind
 !     JS
-      d0 = 13./12.
-      d1 = 1./4.
+      d0 = 13._mykind/12._mykind
+      d1 = 1._mykind/4._mykind
 !     Weights for polynomial reconstructions
-      c0 = 1./3.
-      c1 = 5./6.
-      c2 =-1./6.
-      c3 =-7./6.
-      c4 =11./6.
+      c0 = 1._mykind/3._mykind
+      c1 = 5._mykind/6._mykind
+      c2 =-1._mykind/6._mykind
+      c3 =-7._mykind/6._mykind
+      c4 =11._mykind/6._mykind
 !    
       do m=1,nvar
 !    
-       betap(2) = d0*(     vp(m,i)-2.*vp(m,i+1)+vp(m,i+2))**2+d1*(3.*vp(m,i)-4.*vp(m,i+1)+vp(m,i+2))**2
-       betap(1) = d0*(     vp(m,i-1)-2.*vp(m,i)+vp(m,i+1))**2+d1*(     vp(m,i-1)-vp(m,i+1) )**2
-       betap(0) = d0*(     vp(m,i)-2.*vp(m,i-1)+vp(m,i-2))**2+d1*(3.*vp(m,i)-4.*vp(m,i-1)+vp(m,i-2))**2
+       betap(2) = d0*(     vp(m,i)-2._mykind*vp(m,i+1)+vp(m,i+2))**2+d1*(3._mykind*vp(m,i)-4._mykind*vp(m,i+1)+vp(m,i+2))**2
+       betap(1) = d0*(     vp(m,i-1)-2._mykind*vp(m,i)+vp(m,i+1))**2+d1*(     vp(m,i-1)-vp(m,i+1) )**2
+       betap(0) = d0*(     vp(m,i)-2._mykind*vp(m,i-1)+vp(m,i-2))**2+d1*(3._mykind*vp(m,i)-4._mykind*vp(m,i-1)+vp(m,i-2))**2
 !    
-       betam(2) = d0*(     vm(m,i+1)-2.*vm(m,i)+vm(m,i-1))**2+d1*(3.*vm(m,i+1)-4.*vm(m,i)+vm(m,i-1))**2
-       betam(1) = d0*(     vm(m,i+2)-2.*vm(m,i+1)+vm(m,i))**2+d1*(     vm(m,i+2)-vm(m,i) )**2
-       betam(0) = d0*(     vm(m,i+1)-2.*vm(m,i+2)+vm(m,i+3))**2+d1*(3.*vm(m,i+1)-4.*vm(m,i+2)+vm(m,i+3))**2
+       betam(2) = d0*(     vm(m,i+1)-2._mykind*vm(m,i)+vm(m,i-1))**2+d1*(3._mykind*vm(m,i+1)-4._mykind*vm(m,i)+vm(m,i-1))**2
+       betam(1) = d0*(     vm(m,i+2)-2._mykind*vm(m,i+1)+vm(m,i))**2+d1*(     vm(m,i+2)-vm(m,i) )**2
+       betam(0) = d0*(     vm(m,i+1)-2._mykind*vm(m,i+2)+vm(m,i+3))**2+d1*(3._mykind*vm(m,i+1)-4._mykind*vm(m,i+2)+vm(m,i+3))**2
 !    
-       sump = 0.
-       summ = 0.
+       sump = 0._mykind
+       summ = 0._mykind
        do l=0,2
-        alfp(l) = dwe(  l)/(1.E-6+betap(l))**2
-        alfm(l) = dwe(  l)/(1.E-6+betam(l))**2
+        alfp(l) = dwe(  l)/(0.000001_mykind+betap(l))**2
+        alfm(l) = dwe(  l)/(0.000001_mykind+betam(l))**2
         sump = sump + alfp(l)
         summ = summ + alfm(l)
        enddo
@@ -2335,7 +2337,7 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
         omp(l) = alfp(l)/sump
         omm(l) = alfm(l)/summ
        enddo
-!    
+!
        vminus(m)   = omp(2)*(c0*vp(m,i  )+c1*vp(m,i+1)+c2*vp(m,i+2)) + &
          & omp(1)*(c2*vp(m,i-1)+c1*vp(m,i  )+c0*vp(m,i+1)) + omp(0)*(c0*vp(m,i-2)+c3*vp(m,i-1)+c4*vp(m,i  ))
        vplus(m)   = omm(2)*(c0*vm(m,i+1)+c1*vm(m,i  )+c2*vm(m,i-1)) +  &
@@ -2347,15 +2349,15 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
 !    
       i = iweno ! index of intermediate node to perform reconstruction
 !    
-      dwe( 0) = 1./35.
-      dwe( 1) = 12./35.
-      dwe( 2) = 18./35.
-      dwe( 3) = 4./35.
+      dwe( 0) = 1._mykind/35._mykind
+      dwe( 1) = 12._mykind/35._mykind
+      dwe( 2) = 18._mykind/35._mykind
+      dwe( 3) = 4._mykind/35._mykind
 !    
 !     JS weights
-      d1 = 1./36.
-      d2 = 13./12.
-      d3 = 781./720.
+      d1 = 1._mykind/36._mykind
+      d2 = 13._mykind/12._mykind
+      d3 = 781._mykind/720._mykind
 !    
       do m=1,nvar
 !    
@@ -2385,11 +2387,11 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
        &  d2*(-   vm(m,i+4)+ 4*vm(m,i+3)- 5*vm(m,i+2)+ 2*vm(m,i+1))**2+&
        &  d3*(   -vm(m,i+4)+ 3*vm(m,i+3)- 3*vm(m,i+2)+   vm(m,i+1))**2 
 !    
-       sump = 0.D0
-       summ = 0.D0
+       sump = 0._mykind
+       summ = 0._mykind
        do l=0,3
-        alfp(l) = dwe(  l)/(1.E-6+betap(l))**2
-        alfm(l) = dwe(  l)/(1.E-6+betam(l))**2
+        alfp(l) = dwe(  l)/(0.000001_mykind+betap(l))**2
+        alfm(l) = dwe(  l)/(0.000001_mykind+betam(l))**2
         sump = sump + alfp(l)
         summ = summ + alfm(l)
        enddo
@@ -2409,8 +2411,8 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
 !    
       enddo ! end of m-loop 
 !    
-      vminus = vminus/24.
-      vplus  = vplus /24.
+      vminus = vminus/24._mykind
+      vplus  = vplus /24._mykind
 !    
      else
       write(*,*) 'Error! WENO scheme not implemented'
@@ -2418,5 +2420,63 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
      endif
 
 endsubroutine wenorec
+!
+#ifdef USE_CUDA
+attributes(device) &
+#endif
+subroutine upwrec(nvar,vp,vm,vminus,vplus,iweno)
+!    
+     implicit none
+     integer, parameter :: mykind = MYKIND
+!
+!    Passed arguments
+     integer :: nvar, iweno
+     real(mykind),dimension(nvar,2*iweno) :: vm,vp
+     real(mykind),dimension(nvar) :: vminus,vplus
+!    
+!    Local variables
+     real(mykind),dimension(-1:4) :: dwe           ! linear weights
+     real(mykind),dimension(-1:4) :: alfp,alfm     ! alpha_l
+     real(mykind),dimension(-1:4) :: betap,betam   ! beta_l
+     real(mykind),dimension(-1:4) :: omp,omm       ! WENO weights
+!    
+     integer :: r,i,j,k,l,m
+     real(mykind) :: c0,c1,c2,c3,c4,d0,d1,d2,d3,d4,summ,sump
+!    
+     if (iweno==1) then ! Godunov
+!    
+      i = iweno ! index of intermediate node to perform reconstruction
+!    
+      vminus(1:nvar) = vp(1:nvar,i)
+      vplus (1:nvar) = vm(1:nvar,i+1)
+!    
+     elseif (iweno==2) then ! WENO-3
+!    
+      i = iweno ! index of intermediate node to perform reconstruction
+!
+      vminus(1:nvar) =  -1*vp(1:nvar,i-1)+5*vp(1:nvar,i)  +2*vp(1:nvar,i+1)
+      vplus (1:nvar) =   2*vm(1:nvar,i  )+5*vm(1:nvar,i+1)-1*vm(1:nvar,i+2)
+      vminus(1:nvar) = vminus(1:nvar)/6._mykind
+      vplus (1:nvar) = vplus (1:nvar)/6._mykind
+!
+     elseif (iweno==3) then ! WENO-5
+!    
+      i = iweno ! index of intermediate node to perform reconstruction
+!
+      vminus(1:nvar) =  2*vp(1:nvar,i-2)-13*vp(1:nvar,i-1)+47*vp(1:nvar,i)  +27*vp(1:nvar,i+1)-3*vp(1:nvar,i+2)
+      vplus (1:nvar) = -3*vm(1:nvar,i-1)+27*vm(1:nvar,i  )+47*vm(1:nvar,i+1)-13*vm(1:nvar,i+2)+2*vm(1:nvar,i+3)
+      vminus(1:nvar) = vminus(1:nvar)/60._mykind
+      vplus (1:nvar) = vplus (1:nvar)/60._mykind
+!    
+!     elseif (iweno==4) then ! WENO-7
+!!    
+!      i = iweno ! index of intermediate node to perform reconstruction
+!    
+     else
+      write(*,*) 'Error! Upwind scheme not implemented'
+      stop
+     endif
+
+endsubroutine upwrec
 
 endmodule mod_euler

@@ -23,7 +23,7 @@ subroutine solver
  if (masterproc) write(*,*) 'Done'
  call updateghost()
  call prims()
- if (tresduc<1._mykind) then
+ if (tresduc>0._mykind.and.tresduc<1._mykind) then
   call sensor()
   call bcswapduc_prepare()
   call bcswapduc()
@@ -38,9 +38,9 @@ subroutine solver
   icyc = icyc+1
 !
   call rk() ! Third-order RK scheme
-  !if(io_type > 0) then
-  ! call write_wallpressure
-  !endif
+! if(io_type > 0) then
+!  call write_wallpressure
+! endif
  !
   if (io_type>0) then
 !
