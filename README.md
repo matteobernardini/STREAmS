@@ -114,7 +114,7 @@ srun ./streams
 
 `nxmax  nymax  nzmax` integer numbers defining the number of grid nodes along each direction
  
- `nymaxwr   rlywr    dyp_target` specify the wall-normal mesh features. dyp_target is the desired spacing at the wall in inner units, <img src="https://rawgit.com/in	git@github.com:matteobernardini/STREAmS/master/svgs/f860ead74a4dff89d33b26468c06bbf7.svg?invert_in_darkmode&sanitize=true" align=middle width=32.43933pt height=26.17758pt/>.
+ `nymaxwr   rlywr    dyp_target` specify the wall-normal mesh features. dyp_target is the desired spacing at the wall in inner units, <img src="svgs/f860ead74a4dff89d33b26468c06bbf7.svg?invert_in_darkmode&sanitize=true" align=middle width=32.43933pt height=26.17758pt/>.
  nymaxwr denotes the number of grid points in the wall-resolved region, ranging from y=0 (wall) up to y=rlywr, where a sinh mapping
  is applied. Both nymaxwr and rlywr can be specified when iflow = 1 (turbulent boundary layer), then a geometric progression is applied from
  y=rlywr up to y = rly. For iflow = 2 (shock/boundary-layer interaction), nymaxwr must be specified but rlywr is automatically computed.
