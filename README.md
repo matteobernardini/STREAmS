@@ -20,7 +20,6 @@ solving the fully compressible Navier-Stokes equations. Currently, three canonic
 * compressible turbulent channel flow
 * compressible zero-pressure-gradient turbulent boundary layer
 * supersonic oblique shock wave/turbulent boundary-layer interaction
-
 STREAmS can be used both on local cluster and massively parallel HPC architectures. 
 
 # Compiling
@@ -83,16 +82,13 @@ available for each node. For CINECA Marconi-100 cluster -- 4 GPUS per node --  a
 #!/bin/bash
 #SBATCH -N 2 
 #SBATCH --tasks-per-node 4
-#SBATCH --cpus-per-task 32
-#SBATCH --ntasks-per-socket 2
-#SBATCH --mem=128G 
-#SBATCH --partition=m100_usr_prod
+#SBATCH --mem=64G 
+#SBATCH --partition=debug 
 #SBATCH --time=00:30:00 
 #SBATCH --gres=gpu:4
-
-module load profile/global hpc-sdk/20.5--binary
-
-mpirun -np 8 ./streams
+#SBATCH --partition=debug 
+module load profile/global pgi
+srun ./streams
 ```
 
 For CSCS Pitz-Daint cluster -- 1 GPU per node -- a possible submission script using 8 GPUs is:
@@ -178,8 +174,8 @@ Typical input files for canonical flow cases are available.
     in the homogeneous spatial directions and in time (statistics are progressively updated in time at each restart if idiski=2, or collected from scratch if idisk=1).
     The file `channstat.prof` contains 15 columns:
 1) <img src="svgs/08b335933c05df68e8439a765e868cdf.svg?invert_in_darkmode&sanitize=true" align=middle width=26.33961pt height=24.6576pt/> is the wall-normal coordinate, normalized with the channel half width
-2) <img src="svgs/9b58ae6c5c8bc012390df2685d76bbb1.svg?invert_in_darkmode&sanitize=true" align=middle width=101.400585pt height=26.17758pt/> the wall-normal coordinate in viscous units
-3) <img src="svgs/b2efe697138b1a562ebfa71d47ec3d6f.svg?invert_in_darkmode&sanitize=true" align=middle width=111.16644pt height=28.3107pt/> the wall-normal coordinate transformed according to Trettel & Larsson in viscous units
+2) <img src="svgs/9cbaafb1656e7b37560d2705ed2653e1.svg?invert_in_darkmode&sanitize=true" align=middle width=72.642735pt height=26.17758pt/> the wall-normal coordinate in viscous units
+3) <img src="svgs/c29b0a6ba7b896aed4d1ff94a957d475.svg?invert_in_darkmode&sanitize=true" align=middle width=82.40859pt height=28.3107pt/> the wall-normal coordinate transformed according to Trettel & Larsson in viscous units
 4) <img src="svgs/e1210f0fa24ba17ea9fd4da41c310dab.svg?invert_in_darkmode&sanitize=true" align=middle width=32.820645pt height=24.6576pt/> the mean streamwise velocity averaged according to Favre, normalized with the bulk flow velocity
 5) <img src="svgs/edd39792d631fff9fc9340cbcd03af76.svg?invert_in_darkmode&sanitize=true" align=middle width=34.432035pt height=24.6576pt/> the mean streamwise velocity averaged according to Favre, normalized with the friction velocity
 6) <img src="svgs/5168dd0c22b7ee67557ebdc76a52a925.svg?invert_in_darkmode&sanitize=true" align=middle width=49.08519pt height=24.6576pt/> the mean streamwise velocity transformed according to van Driest, normalized with the friction velocity
@@ -220,8 +216,8 @@ Typical input files for canonical flow cases are available.
    The files are printed at the end of each run. Statistics are progressively updated in time at each restart if idiski=2, or collected from scratch if idisk=1.
    The number nnn indicates the global mesh index in the streamwise direction at which statistics are printed.
    The files contains 10 columns:
-1) <img src="svgs/f709689c86153cfc47fc13bd71263621.svg?invert_in_darkmode&sanitize=true" align=middle width=69.37062pt height=24.6576pt/>, wall-normal coordinate, normalized with the local boundary layer thickness
-2) <img src="svgs/413e5e559443639a2283994f9ccf0131.svg?invert_in_darkmode&sanitize=true" align=middle width=101.400585pt height=26.17758pt/> wall-normal coordinate, normalized with the viscous lenght scale
+1) <img src="svgs/06aaa96f13e0f03a6cde0227940dee9e.svg?invert_in_darkmode&sanitize=true" align=middle width=37.27944pt height=24.6576pt/>, wall-normal coordinate, normalized with the local boundary layer thickness
+2) <img src="svgs/b93877c5651e7a90ae95501151ef0443.svg?invert_in_darkmode&sanitize=true" align=middle width=72.642735pt height=26.17758pt/> wall-normal coordinate, normalized with the viscous lenght scale
 3) <img src="svgs/c003ef34c0f5583624f88cf9611fa556.svg?invert_in_darkmode&sanitize=true" align=middle width=76.67319pt height=26.17758pt/> the Favre averaged streamwise velocity, normalized with the friction velocity
 4) <img src="svgs/5168dd0c22b7ee67557ebdc76a52a925.svg?invert_in_darkmode&sanitize=true" align=middle width=49.08519pt height=24.6576pt/> the streamwise velocity transformed according to van Driest
 5) <img src="svgs/e387aa38fb0526c04f95bdf2108c30dd.svg?invert_in_darkmode&sanitize=true" align=middle width=33.737055pt height=26.17758pt/> the density scaled streamwise velocity rms
