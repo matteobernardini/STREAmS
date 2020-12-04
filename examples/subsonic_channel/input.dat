@@ -13,41 +13,41 @@
 !
 !=============================================================
 
- iflow 
-   0   
+ flow_type (0==>channel, 1==>BL, 2==>SBLI)
+     0   
 
-   rlx           rly         rlz 
+    Lx             Ly         Lz
  12.5663706143592  2.  6.283185307179586
  
- nxmax  nymax  nzmax
+   Nx     Ny     Nz
   384    192    384
  
- nymaxwr   rlywr    dyp_target  
+  Ny_wr     Ly_wr      dy+_w
   150       2.5         1.
 
- ng  ivis  iorder  iweno
-  2     4      4     2  
+ ng  visc_ord  ep_ord  weno_par (1==>ord_1,2==>ord_3, 3==>ord_5, 4==>ord_7)
+  2     4        4        2  
  
- nblocks(1)  nblocks(3)
-   4          1
+ MPI_x_split     MPI_z_split
+     4               1
 
- tresduc  ximp   deflec    pgradf
-  1.2      50.     8.        0.
+ sensor_threshold   xshock_imp   deflec_shock    pgrad (0==>constant bulk)
+     1.2                50.           8.           0.
       
- idiski   ncyc    cfl    nstep   nprint   io_type
-   0     100000    .8      10      10      2
+ restart   num_iter   cfl   dt_control  print_control  io_type
+    0       30000    .8        10           10            2
       
- rm      re (friction)  twall/taw   visc_type   s2tinf   dftscaling
- 0.2         180.           1.        1           0.        0.75
+  Mach      Reynolds (friction)  temp_ratio   visc_type   s2tinf   df_par
+   0.2        180.                  1.            1         0.      0.75
   
- istat  nstat
-  250      0
+ stat_control  xstat_num
+    250           0
 
- xstat
+ xstat_list
    10. 20. 25.
  
- dtsave dtsave_restart  enable_plot3d   enable_vtk
-  50.       50.                1              1
+ dtsave    dtsave_restart  enable_plot3d   enable_vtk
+  50.           50.              1              1
 
-  irand
+  rand_type
    -1
