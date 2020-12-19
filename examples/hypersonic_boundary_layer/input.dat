@@ -37,8 +37,8 @@
  idiski   ncyc   cfl    nstep   nprint   io_type
    0     50000   .75     1       10        2
       
- rm      re (friction)  twall/taw   visc_type   s2tinf  dftscaling
- 5.86      375.          0.76          2           0.        0.25
+ rm      re (friction)  twall/taw   visc_type   tref (dimensional)  dftscaling
+ 5.86      375.          0.76          2           100.                 0.25
   
  istat  nstat
   250      9

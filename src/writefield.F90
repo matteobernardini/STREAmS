@@ -52,8 +52,20 @@ subroutine writefield
  call MPI_FILE_OPEN(mp_cart,'field_'//nastore//'.q',MPI_MODE_RDWR,MPI_INFO_NULL,mpi_io_file,iermpi)
  offset = 3*size_integer+4*size_real
  do l=1,nv
- call MPI_FILE_SET_VIEW(mpi_io_file,offset,mpi_prec,filetype,"native",MPI_INFO_NULL,iermpi)
- call MPI_FILE_WRITE_ALL(mpi_io_file,w(l,1:nx,1:ny,1:nz),ntot,mpi_prec,istatus,iermpi)
+  call MPI_FILE_SET_VIEW(mpi_io_file,offset,mpi_prec,filetype,"native",MPI_INFO_NULL,iermpi)
+  select case (l)
+  case(1)
+   call MPI_FILE_WRITE_ALL(mpi_io_file,w(l,1:nx,1:ny,1:nz),ntot,mpi_prec,istatus,iermpi)
+  case(2:4)
+   call MPI_FILE_WRITE_ALL(mpi_io_file,w(l,1:nx,1:ny,1:nz)/w(1,1:nx,1:ny,1:nz),ntot,mpi_prec,istatus,iermpi)
+  case(5)
+   call MPI_FILE_WRITE_ALL(mpi_io_file,w(1,1:nx,1:ny,1:nz)*temperature(1:nx,1:ny,1:nz),ntot,mpi_prec,istatus,iermpi)
+  end select
+! if (l<nv) then
+!  call MPI_FILE_WRITE_ALL(mpi_io_file,w(l,1:nx,1:ny,1:nz),ntot,mpi_prec,istatus,iermpi)
+! else
+!  call MPI_FILE_WRITE_ALL(mpi_io_file,w(1,1:nx,1:ny,1:nz)*temperature(1:nx,1:ny,1:nz),ntot,mpi_prec,istatus,iermpi)
+! endif
   do m=1,nblocks(1)*nblocks(2)*nblocks(3)
    offset = offset+size_real*ntot
   enddo

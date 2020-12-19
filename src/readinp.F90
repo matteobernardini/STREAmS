@@ -7,6 +7,21 @@ subroutine readinp
 !
  integer :: l, i_skip
 !
+!
+! iflow = 0 ==> Channel flow
+!
+!       rm:             Mach number based on bulk velocity and wall temperature
+!       retauinflow:    Estimated friction Reynolds number (target)
+!       trat:           Bulk temperature/wall temperature (if <=0., bulk temperature free to evolve)
+!       pgradf:         Assigned pressure gradient (if 0. pressure gradient computed to maintain bulk velocity constant)
+!
+! iflow = 1,2 ==> Boundary layer,SBLI
+!
+!       rm:             Free-stream Mach number
+!       retauinflow:    Estimated friction Reynolds number (target) at inflow
+!       trat:           Wall-to-recovery-temperature ratio
+!       deflec:         Deflection angle after shock (only for SBLI)
+!
  open (unit=12,file='input.dat',form='formatted')
  do i_skip=1,33
   read (12,*)
@@ -18,7 +33,7 @@ subroutine readinp
  read (12,*) idiski, ncyc, cfl, nstep, nprint, io_type
  read (12,*)
  read (12,*)
- read (12,*) rm, retauinflow, trat, visc_type, s2tinf, dftscaling
+ read (12,*) rm, retauinflow, trat, visc_type, tref_dimensional, dftscaling
  read (12,*)
  read (12,*)
  read (12,*) istat, nstat

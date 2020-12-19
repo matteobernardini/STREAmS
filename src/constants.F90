@@ -8,30 +8,18 @@ subroutine constants
  integer :: ii,j,jj,kk,m
  real(mykind), dimension(3,ny) :: ylen ! Integral lengthscale in y
  real(mykind), dimension(3,ny) :: zlen ! Integral lengthscale in z
- real(mykind) :: tinf
  real(mykind) :: reout
+ real(mykind) :: trattmp,rmb
+ real(mykind) :: sqrtt,sdivt,sdivt1,sqgmr2
+ real(mykind) :: c1,c2,rmfac,rmcfac,rmufac
+ real(mykind) :: alfa_channel,rm_infinity,tb_tw,tinf_tw
 !      
  write(chx,1003) ncoords(1)
  write(chy,1003) ncoords(2)
  write(chz,1003) ncoords(3)
  1003 format(I3.3)
 !
- if (s2tinf==0._mykind) then
-  tinf     = 300._mykind/(1._mykind+0.5*gm1*rm*rm)
-  s2tinf   = 110.4_mykind/tinf
- endif
-!
- if (iflow==-1) then ! wind tunnel
-  reout = retauinflow 
- elseif (iflow==0) then
-  call get_reynolds_channel(ny/2,y(1:ny/2),yn(1:ny/2+1),retauinflow,rm,trat,s2tinf,reout)
-  if (masterproc) write(*,*) 'Re bulk (based on half channel) = ', reout
- else
-  call get_reynolds(ny,y(1:ny),retauinflow,rm,trat,s2tinf,reout)
-  if (masterproc) write(*,*) 'Re = ', reout
- endif
- re = reout
- sqgmr = sqrt(gamma)*rm/re
+ s2tinf = 110.4_mykind/tref_dimensional
 !
  rho0 = 1._mykind
  u0   = sqrt(gamma)*rm
@@ -41,10 +29,72 @@ subroutine constants
  p0   = 1._mykind
  t0   = 1._mykind
 !
+ if (iflow==-1) then ! wind tunnel
+  reout = retauinflow 
+ elseif (iflow==0) then
+!
+  rmfac = 0.5_mykind*gm1*rm*rm*rfac
+  if (trat<=0._mykind) then
+   tb_tw  = 1._mykind+rmfac
+  else
+   tb_tw  = trat
+   target_tbulk = tb_tw
+  endif
+  rmb     = rm/sqrt(tb_tw) ! Mach bulk based on Tbulk
+  if (masterproc) write(*,*) 'Mach bulk (defined with Tbulk) = ', rmb
+  trattmp = 1._mykind/tb_tw/(1._mykind+0.5_mykind*gm1*rmb*rmb*rfac) ! Ratio between Twall and Trecovery based on Tbulk
+  if (masterproc) write(*,*) 'Ratio between Twall and Trecovery based on Tbulk =', trattmp
+  call get_reynolds_chan(ny/2,y(1:ny/2),yn(1:ny/2+1),retauinflow,rmb,trattmp,s2tinf,reout)
+  if (masterproc) write(*,*) 'Re bulk (viscosity evaluated at Twall) = ', reout
+!
+! Connection to spatially developing compressible channel (see Pirozzoli, PRF 2019)
+  if (.true.) then
+   rm_infinity  = rm/sqrt(1._mykind-rmfac) ! Mach number at infinity
+   rmfac = 0.5_mykind*gm1*rm_infinity*rm_infinity*rfac
+   alfa_channel = (trat*(1._mykind+rmfac)-1._mykind)/rmfac ! Alfa value (see PRF Pirozzoli)
+   if (masterproc) write(*,*) 'Mach infinity = ', rm_infinity
+   if (masterproc) write(*,*) 'Alfa channel = ', alfa_channel
+   tinf_tw = 1._mykind/(1._mykind+0.5_mykind*gm1*rm_infinity*rm_infinity*rfac)
+   if (visc_type==1) then
+    rmufac  = tinf_tw**vtexp
+   else
+    sqrtt   =  sqrt(tinf_tw)
+    sdivt   =  s2tinf/tinf_tw
+    sdivt1  =  1._mykind+sdivt
+    rmufac  = (1._mykind+s2tinf)*sqrtt/sdivt1  ! molecular viscosity
+   endif
+   if (masterproc) write(*,*) 'Re bulk (viscosity evaluated at t_infinity) = ', reout/rmufac
+  endif
+!
+  if (visc_type==1) then
+   rmufac  = tb_tw**vtexp
+  else
+   sqrtt   = sqrt(tb_tw)
+   sdivt   = s2tinf/tb_tw
+   sdivt1  = 1._mykind+sdivt
+   rmufac  = (1._mykind+s2tinf)*sqrtt/sdivt1  ! molecular viscosity
+  endif
+!
+  if (trat<=0._mykind) then
+   if (masterproc) write(*,*) 'Estimated Re bulk (viscosity evaluated at tbulk) = ', reout/rmufac
+  else
+   if (masterproc) write(*,*) 'Re bulk (viscosity evaluated at tbulk) = ', reout/rmufac
+  endif
+!
+ else
+  call get_reynolds(ny,y(1:ny),retauinflow,rm,trat,s2tinf,reout)
+  if (masterproc) write(*,*) 'Re = ', reout
+ endif
+!
+ re = reout
+ sqgmr = sqrt(gamma)*rm/re
+!
 ! Adiabatic wall temperature and effective wall temperature
 !
- taw = t0*(1._mykind+0.5_mykind*gm1*rm*rm*rfac)
+ taw   = t0*(1._mykind+0.5_mykind*gm1*rm*rm*rfac)
  twall = taw*trat
+!
+ if (iflow==0) twall = t0
 !
 ! winf is the vector of conservative variables at freestream conditions
 !
@@ -56,7 +106,7 @@ subroutine constants
 !
  if (iflow==2) call osw() ! Oblique shock wave
 !
-!Coefficients for convective terms
+! Coefficients for computation of convective terms
 !
  dcoe(1,1) = 1._mykind/2._mykind
 !
@@ -72,6 +122,8 @@ subroutine constants
  dcoe(3,4) =  4._mykind/105._mykind
  dcoe(4,4) = -1._mykind/280._mykind
 !
+! Coefficients for computation of first derivatives (used in visflx and visflx_stag)
+!
  select case (ivis/2)
  case (1)
   coeff_deriv1(1) = 0.5_mykind
@@ -83,6 +135,8 @@ subroutine constants
   coeff_deriv1(2) = -0.15_mykind
   coeff_deriv1(3) = 1._mykind/60._mykind
  end select
+!
+! Coefficients for computation of laplacians (used in visflx)
 !
  select case (ivis/2)
  case (1)
@@ -98,6 +152,42 @@ subroutine constants
   coeff_clap(2) = -0.15_mykind
   coeff_clap(3) = 1._mykind/90._mykind
  endselect
+!
+! Coefficients for computation of first derivatives staggered (used in visflx_stag)
+! Warning: they are not the coefficients for the computation of a cell-centred
+! derivative reported in Lele; they are chosen to recover the laplacian
+! coefficients on a uniform mesh
+!
+ select case (ivis/2)
+ case (1)
+  coeff_deriv1s(1) = 1._mykind
+ case (2)
+  coeff_deriv1s(1) =  5._mykind/4._mykind
+  coeff_deriv1s(2) = -1._mykind/12._mykind
+ case (3)
+  coeff_deriv1s(1) = 49._mykind/36._mykind
+  coeff_deriv1s(2) = -5._mykind/36._mykind
+  coeff_deriv1s(3) =  1._mykind/90._mykind
+! coeff_deriv1s(1) = 225._mykind/192._mykind
+! coeff_deriv1s(2) = -25._mykind/384._mykind
+! coeff_deriv1s(3) =   9._mykind/1920._mykind
+ end select
+!
+! Coefficients for mid point interpolation (used in visflx_stag)
+!
+ select case (ivis/2)
+ case (1)
+  coeff_midpi(1) = 0.5_mykind
+ case (2)
+  coeff_midpi(1) =  9._mykind/16._mykind
+  coeff_midpi(2) = -1._mykind/16._mykind
+ case (3)
+  coeff_midpi(1) =  75._mykind/128._mykind
+  coeff_midpi(2) = -25._mykind/256._mykind
+  coeff_midpi(3) =   3._mykind/256._mykind
+ end select
+!
+!call compute_coeff_xyz_midpi()
 !
 !Coefficients for RK 3rd order time integration
 !

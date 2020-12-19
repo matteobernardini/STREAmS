@@ -318,86 +318,6 @@ subroutine gasdev_s(harvest)
 !
 end subroutine gasdev_s
 !
-subroutine get_reynolds_channel(ny,eta,yn,retau,rm,trat,s2tinf,reout)
-!
- use mod_streams, only: mykind, tol_iter
- implicit none
-!
- integer, intent(in) :: ny
- real(mykind), intent(in)  :: retau,rm,trat,s2tinf
- real(mykind), intent(out) :: reout
- real(mykind), dimension(ny), intent(in)  :: eta
- real(mykind), dimension(ny+1), intent(in) :: yn
- 
- real(mykind), dimension(ny) :: uplus       ! Incompressible velocity profile
- real(mykind), dimension(ny) :: ucplus      ! Compressible velocity profile
- real(mykind), dimension(ny) :: ucplusold
- real(mykind), dimension(ny) :: density     ! Density profile
- real(mykind), dimension(ny) :: viscosity   ! Viscosity profile
- real(mykind), dimension(ny) :: temperature ! Temperature profile
-
- real(mykind) :: cf,dstar,gm1,gm1h,res,rfac,rhow,th,tr,tw,uci,ue,uu,yplus,du,dy,te
- real(mykind) :: pr,alf,s,fuu,rhosum,rhousum,ubulk
- real(mykind) :: gamma
- integer :: j
-!
- uplus = 0._mykind
- do j=1,ny
-  yplus    = (1._mykind+eta(j))*retau
-  uplus(j) = 5.5_mykind+log(yplus)/0.4_mykind
- enddo
-!
- gamma = 1.4_mykind
- gm1   = gamma-1._mykind
- gm1h  = 0.5_mykind*gm1
- rfac  = 0.89_mykind                ! Recovery factor
- te    = 1._mykind+gm1h*rfac*rm**2  ! Recovery temperature
- tw    = 1._mykind
- tr    = te!+gm1h*rfac*rm**2  ! Recovery temperature
- rhow  = 1._mykind/tw
-!alf   = 0.8259_mykind
- pr    = 0.72_mykind                ! Prandtl number
- s     = 1.1_mykind                 ! Reynolds analogy factor
- alf   = s*pr                       ! see Zhang
-!
-!Iterative loop to find the compressible profile
- ucplus = uplus
- do 
-!
-  ucplusold = ucplus
-  do j=1,ny
-   uu = ucplus(j)/ucplus(ny)
-   fuu = alf*uu+(1-alf)*uu**2
-   temperature(j) = tw+(tr-tw)*fuu+(te-tr)*uu**2 ! Duan & Martin (see Zhang)
-   density(j) = 1._mykind/temperature(j)
-  enddo
-  do j=2,ny
-   du        = uplus(j)-uplus(j-1)
-   uci       = 0.5_mykind*(sqrt(rhow/density(j))+sqrt(rhow/density(j-1)))
-   ucplus(j) = ucplus(j-1)+uci*du
-  enddo
-  res = 0._mykind
-  do j=1,ny
-   res = res+abs(ucplus(j)-ucplusold(j))
-  enddo
-  res = res/ny
-  if (res < tol_iter) exit
-!  
- enddo ! End of iterative loop
-!
- rhosum   = 0.
- rhousum  = 0.
- do j=1,ny
-  dy      = yn(j+1)-yn(j)
-  rhosum  = rhosum+density(j)*dy
-  rhousum = rhousum+density(j)*ucplus(j)*dy
- enddo
- ubulk = rhousum/rhosum
-!
- reout = retau*ubulk*rhosum
-!
-end subroutine get_reynolds_channel
-!
 subroutine shock_angle(rm,delta,sigma)
 !
  use mod_streams, only: mykind,pi,gamma,tol_iter
@@ -437,3 +357,94 @@ subroutine shock_angle(rm,delta,sigma)
 !enddo
 !
 end subroutine shock_angle
+!
+subroutine get_reynolds_chan(ny,eta,yn,retau,rm,trat,s2tinf,reout)
+!
+ use mod_streams, only: mykind, tol_iter, visc_type, vtexp
+ implicit none
+!
+ integer, intent(in) :: ny
+ real(mykind), intent(in)  :: retau,rm,trat,s2tinf
+ real(mykind), intent(out) :: reout
+ real(mykind), dimension(ny), intent(in)  :: eta
+ real(mykind), dimension(ny+1), intent(in) :: yn
+! 
+ real(mykind), dimension(ny) :: uplus       ! Incompressible velocity profile
+ real(mykind), dimension(ny) :: ucplus      ! Compressible velocity profile
+ real(mykind), dimension(ny) :: ucplusold
+ real(mykind), dimension(ny) :: density     ! Density profile
+ real(mykind), dimension(ny) :: viscosity   ! Viscosity profile
+ real(mykind), dimension(ny) :: temperature ! Temperature profile
+
+ real(mykind) :: gm1,gm1h,res,rfac,rhow,tr,tw,uci,ue,uu,yplus,du,dy,te
+ real(mykind) :: pr,alf,s,fuu,rhosum,rhousum,ubulk
+ real(mykind) :: gamma
+ integer :: j,l
+ real(mykind), external :: velmusker
+!
+ uplus = 0._mykind
+ do j=2,ny
+  yplus    = (1._mykind+eta(j))*retau
+! uplus(j) = velmusker(yplus,retau) ! Incompressible velocity profile (Musker, AIAA J 1979)
+  uplus(j) = 5.5_mykind+log(yplus)/0.4_mykind
+ enddo
+!
+ gamma = 1.4_mykind
+ gm1   = gamma-1._mykind
+ gm1h  = 0.5_mykind*gm1
+ rfac  = 0.89_mykind                ! Recovery factor
+ te    = 1._mykind
+ tr    = 1._mykind+gm1h*rfac*rm**2 ! Recovery temperature
+ tw    = trat*tr                    ! Wall temperature
+ rhow  = 1._mykind/tw
+!alf   = 0.8259_mykind
+ pr    = 0.72_mykind                ! Prandtl number
+ s     = 1.1_mykind                 ! Reynolds analogy factor
+ alf   = s*pr                       ! see Zhang
+!
+! Iterative loop to find the compressible profile
+ ucplus = uplus
+ do 
+!
+  ucplusold = ucplus
+  do j=1,ny
+   uu = ucplus(j)/ucplus(ny)
+!  temperature(j) = tw+(tr-tw)*uu+(1._mykind-tr)*uu**2 ! Walz pag 399 Zhang JFM 2014
+   fuu = alf*uu+(1-alf)*uu**2
+   temperature(j) = tw+(tr-tw)*fuu+(te-tr)*uu**2 ! Duan & Martin (see Zhang)
+   density(j) = 1._mykind/temperature(j)
+   if (visc_type==1) then
+    viscosity(j) = temperature(j)**vtexp ! Power-law
+   else
+    viscosity(j) = sqrt(temperature(j))*(1._mykind+s2tinf)/(1._mykind+s2tinf/temperature(j))
+   endif
+  enddo
+  do j=2,ny
+   du        = uplus(j)-uplus(j-1)
+   uci       = 0.5_mykind*(sqrt(rhow/density(j))+sqrt(rhow/density(j-1)))
+   ucplus(j) = ucplus(j-1)+uci*du
+  enddo
+  res = 0._mykind
+  do j=1,ny
+   res = res+abs(ucplus(j)-ucplusold(j))
+  enddo
+  res = res/ny
+  if (res < tol_iter) exit
+!   
+ enddo ! End of iterative loop
+!
+ rhosum   = 0.
+ rhousum  = 0.
+ do j=1,ny
+  dy      = yn(j+1)-yn(j)
+  rhosum  = rhosum+density(j)*dy
+  rhousum = rhousum+density(j)*ucplus(j)*dy
+ enddo
+ ubulk = rhousum/rhosum
+!
+ ue    = ucplus(ny)
+!reout = retau*ue/rhow*viscosity(1) 
+!reout = retau*ubulk*rhosum/rhow*viscosity(1) 
+ reout = retau*ubulk*rhosum/rhow
+!
+end subroutine get_reynolds_chan

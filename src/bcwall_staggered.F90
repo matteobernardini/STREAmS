@@ -23,7 +23,7 @@ subroutine bcwall_staggered(ilat)
      qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
      pp   = gm1*(rhoe-rho*qq)
      tt   = pp/rho
-     tt   = 2._mykind*t0-tt
+     tt   = 2._mykind*twall-tt
      rho  = pp/tt
      w_gpu(i,1-l,k,1) =  rho
      w_gpu(i,1-l,k,2) = -rho*uu
@@ -47,7 +47,7 @@ subroutine bcwall_staggered(ilat)
      qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
      pp   = gm1*(rhoe-rho*qq)
      tt   = pp/rho
-     tt   = 2._mykind*t0-tt
+     tt   = 2._mykind*twall-tt
      rho  = pp/tt
      w_gpu(i,ny+l,k,1) =  rho
      w_gpu(i,ny+l,k,2) = -rho*uu

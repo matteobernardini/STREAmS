@@ -10,9 +10,13 @@ subroutine computemetrics
  real(mykind), dimension(nxmax) :: d2xg
  real(mykind), dimension(nymax) :: d2yg
  real(mykind), dimension(nzmax) :: d2zg
+ real(mykind), dimension(0:nxmax) :: dxhg
+ real(mykind), dimension(0:nymax) :: dyhg
+ real(mykind), dimension(0:nzmax) :: dzhg
 !
- real(mykind), dimension(4) :: c
+ real(mykind), dimension(4)   :: c
  real(mykind), dimension(0:4) :: cc
+ real(mykind), dimension(4)   :: cs
 !
  integer :: i,ii,j,jj,k,kk,l,mm,iend,jend,kend
  real(mykind) :: xloc
@@ -34,7 +38,7 @@ subroutine computemetrics
   rlz = 1._mykind
  endif
 !
-! local coordinates
+! local coordinates (nodes)
  ii = nx*ncoords(1)
  do i=1-ng,nx+ng
   x(i) = xg(ii+i)
@@ -43,7 +47,6 @@ subroutine computemetrics
  do j=1-ng,ny+ng
   y(j) = yg(jj+j)
  enddo
-!
  kk = nz*ncoords(3)
  do k=1-ng,nz+ng
   z(k) = zg(kk+k)
@@ -136,7 +139,7 @@ subroutine computemetrics
    enddo
   enddo
  endif
-
+!
  ii = nx*ncoords(1)
  do i=1,nx
   dcsidx (i) = 1._mykind/(dxg(ii+i))
@@ -196,5 +199,79 @@ subroutine computemetrics
    close(18)
   endif
  endif
+!
+! New coordinates and metrics for improved viscous fluxes
+! Coordinates of faces
+!
+ do i=0,nxmax
+  xgh(i) = 0.5_mykind*(xg(i)+xg(i+1))
+ enddo
+ do j=0,nymax
+  ygh(j) = 0.5_mykind*(yg(j)+yg(j+1))
+ enddo
+ do k=0,nzmax
+  zgh(k) = 0.5_mykind*(zg(k)+zg(k+1))
+ enddo
+!
+! local coordinates (faces)
+ ii = nx*ncoords(1)
+ do i=0,nx
+  xh(i) = xgh(ii+i)
+ enddo
+ jj = ny*ncoords(2)
+ do j=0,ny
+  yh(j) = ygh(jj+j)
+ enddo
+ kk = nz*ncoords(3)
+ do k=0,nz
+  zh(k) = zgh(kk+k)
+ enddo
+!
+! Evaluation of metric terms
+ mm = ivis/2
+ select case (mm) ! coefficient for first derivatives
+ case (1)
+  cs(1) = 1._mykind
+ case (2)
+  cs(1) =   5._mykind/4._mykind
+  cs(2) = -1._mykind/12._mykind
+ case (3)
+  cs(1) = 49._mykind/36._mykind
+  cs(2) = -5._mykind/36._mykind
+  cs(3) =  1._mykind/90._mykind
+ case (4)
+  call fail_input("new viscous fluxes not implemented for this order")
+ endselect
+!
+ dxhg = 0._mykind
+ do i=0,nxmax
+  do l=1,mm
+   dxhg(i) = dxhg(i)+cs(l)*(xg(i+l)-xg(i-l+1))
+  enddo
+ enddo
+ dyhg = 0._mykind
+ do j=0,nymax
+  do l=1,mm
+   dyhg(j) = dyhg(j)+cs(l)*(yg(j+l)-yg(j-l+1))
+  enddo
+ enddo
+ dzhg = 0._mykind
+ do k=0,nzmax
+  do l=1,mm
+   dzhg(k) = dzhg(k)+cs(l)*(zg(k+l)-zg(k-l+1))
+  enddo
+ enddo
+ ii = nx*ncoords(1)
+ do i=0,nx
+  dcsidxh(i) = 1._mykind/(dxhg(ii+i))
+ enddo
+ jj = ny*ncoords(2)
+ do j=0,ny
+  detadyh(j) = 1._mykind/(dyhg(jj+j))
+ enddo
+ kk = nz*ncoords(3)
+ do k=0,nz
+  dzitdzh(k) = 1._mykind/(dzhg(kk+k))
+ enddo
 !
 end subroutine computemetrics

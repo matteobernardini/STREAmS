@@ -120,7 +120,6 @@ subroutine readrst_serial
  close  (11)
  write(*,*) 'END - Reading rst.bin from nrank = ',nrank
 !
-!w(1:nv, 1:nx, 1:ny, 1:nz) = fl
  do iv=1,5
   do k=1,nz
    do j=1,ny

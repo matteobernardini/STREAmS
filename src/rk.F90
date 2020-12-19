@@ -75,6 +75,7 @@ subroutine rk
 !
 #ifdef CUDA_ASYNC
   call visflx()
+! call visflx_stag()
   call bcswapdiv_prepare()
   call euler_j()
   call bcswapdiv()
@@ -94,6 +95,7 @@ subroutine rk
   call euler_j()
   if (ndim==3) call euler_k()
   call visflx()
+! call visflx_stag()
   call bcswapdiv_prepare()
   call bcswapdiv()
   if (istep==3.and.tresduc>0._mykind.and.tresduc<1._mykind) then
@@ -138,7 +140,11 @@ subroutine rk
    enddo
   enddo
  !@cuf iercuda=cudaDeviceSynchronize()
-
+!
+  if (iflow==0) then
+   if (trat>0._mykind) call tbforce() ! For channel flow adjust bulk temperature
+  endif
+!
 #ifdef USE_CUDA
  iercuda = cudaGetLastError()
  if (iercuda /= cudaSuccess) then

@@ -1,6 +1,10 @@
 subroutine generategrid
 !
-! Generating mesh (x.dat, y.dat and z.dat)
+!Generating mesh (x.dat, y.dat and z.dat)
+!
+!
+! Mesh is generated in this subroutine for standard cases (iflow = 0,1,2).
+! When iflow = -1, an external program is used for mesh generation
 !
  use mod_streams
  implicit none
@@ -14,9 +18,11 @@ subroutine generategrid
 !
  real(mykind), dimension(nymax+ng) :: tmpyg
 !
+! Uniform spacing in x and z
+!
  dx = rlx/(nxmax-1)
  if (iflow==0) dx = rlx/nxmax
- do i=1-ng,nxmax+ng+1
+ do i=1-ng,nxmax+ng+1 ! One extra ghost node needed for bl cases for estimation of initial wall-normal velocity by means of continuity equation
   xg(i) = (i-1)*dx
  enddo
 !
@@ -26,6 +32,8 @@ subroutine generategrid
    zg(k) = (k-1)*dz
   enddo
  endif
+!
+! Wall-normal distribution is case dependent
 !
  select case (iflow)
 !

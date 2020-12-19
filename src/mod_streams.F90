@@ -7,8 +7,9 @@ module mod_streams
  implicit none
  save
 !
- integer, parameter :: singtype = selected_real_kind(6,37)   ! single precision
- integer, parameter :: doubtype = selected_real_kind(15,307) ! double precision
+ integer, parameter :: singtype = selected_real_kind(6,37)    ! single precision
+ integer, parameter :: doubtype = selected_real_kind(15,307)  ! double precision
+!integer, parameter :: quadtype = selected_real_kind(33,4931) ! extended precision
 #ifdef SINGLE_PRECISION
  integer, parameter :: mykind    = singtype
  integer, parameter :: mpi_prec = mpi_real4
@@ -55,12 +56,14 @@ module mod_streams
 !
  real(mykind), parameter :: gamma  = 1.4_mykind
  real(mykind), parameter :: pr     = 0.72_mykind
+!real(mykind), parameter :: gamma  = 1.08_mykind
+!real(mykind), parameter :: pr     = 0.455_mykind
  real(mykind), parameter :: gm1    = gamma-1._mykind
  real(mykind), parameter :: gm     = 1._mykind/gm1
  real(mykind), parameter :: ggmopr = gamma*gm/pr
  real(mykind), parameter :: vtexp  = 3._mykind/4._mykind
  real(mykind), parameter :: rfac   = 0.89_mykind !pr**(1._mykind/3._mykind)
- real(mykind) :: rm,re,taw,sqgmr,s2tinf,retauinflow,trat,twall
+ real(mykind) :: rm,re,taw,sqgmr,s2tinf,retauinflow,trat,twall,tref_dimensional
  real(mykind) :: rtrms
  real(mykind), dimension(0:nsolmax) :: tsol, tsol_restart
  real(mykind) :: dtsave, dtsave_restart
@@ -105,14 +108,10 @@ module mod_streams
 !
 ! Coordinates and metric related quantities 
  real(mykind) :: rlx,rly,rlz,rlywr,dyp_target
- real(mykind), dimension(:), allocatable :: x
- real(mykind), dimension(:), allocatable :: y,yn
- real(mykind), dimension(:), allocatable :: z
- real(mykind), dimension(:), allocatable :: x_gpu
- real(mykind), dimension(:), allocatable :: y_gpu,yn_gpu
- real(mykind), dimension(:), allocatable :: z_gpu
- real(mykind), dimension(:), allocatable :: xg_gpu
+ real(mykind), dimension(:), allocatable :: x,y,z,yn
+ real(mykind), dimension(:), allocatable :: x_gpu,y_gpu,z_gpu,yn_gpu
  real(mykind), dimension(:), allocatable :: xg,yg,zg
+ real(mykind), dimension(:), allocatable :: xg_gpu
  real(mykind), dimension(:), allocatable :: dcsidx,dcsidx2,dcsidxs
  real(mykind), dimension(:), allocatable :: detady,detady2,detadys
  real(mykind), dimension(:), allocatable :: dzitdz,dzitdz2,dzitdzs
@@ -121,7 +120,14 @@ module mod_streams
  real(mykind), dimension(:), allocatable :: dzitdz_gpu,dzitdz2_gpu,dzitdzs_gpu
  real(mykind), dimension(:), allocatable :: dxg,dyg,dzg
 !
+ real(mykind), dimension(:), allocatable :: xgh,ygh,zgh
+ real(mykind), dimension(:), allocatable :: xh,yh,zh
+ real(mykind), dimension(:), allocatable :: xh_gpu,yh_gpu,zh_gpu
+ real(mykind), dimension(:), allocatable :: dcsidxh,detadyh,dzitdzh
+ real(mykind), dimension(:), allocatable :: dcsidxh_gpu,detadyh_gpu,dzitdzh_gpu
+!
  real(mykind) :: dpdx,rhobulk,ubulk,tbulk
+ real(mykind) :: target_tbulk
 !
 ! BC data
  integer, dimension(:), allocatable :: ibc,ibcnr
@@ -145,30 +151,36 @@ module mod_streams
 !
 ! Mean field for initialization
  real(mykind), dimension(:,:,:), allocatable :: wmean,wmean_gpu
-
- real(mykind),dimension(:), allocatable :: coeff_deriv1
- real(mykind),dimension(:), allocatable :: coeff_deriv1_gpu
- real(mykind),dimension(:), allocatable :: coeff_clap
- real(mykind),dimension(:), allocatable :: coeff_clap_gpu
-
+!
+ real(mykind), dimension(:), allocatable :: coeff_deriv1
+ real(mykind), dimension(:), allocatable :: coeff_deriv1_gpu
+ real(mykind), dimension(:), allocatable :: coeff_clap
+ real(mykind), dimension(:), allocatable :: coeff_clap_gpu
+ real(mykind), dimension(:), allocatable :: coeff_deriv1s
+ real(mykind), dimension(:), allocatable :: coeff_deriv1s_gpu
+ real(mykind), dimension(:), allocatable :: coeff_midpi
+ real(mykind), dimension(:), allocatable :: coeff_midpi_gpu
+ real(mykind), dimension(:,:), allocatable :: cx_midpi,cy_midpi,cz_midpi
+ real(mykind), dimension(:,:), allocatable :: cx_midpi_gpu,cy_midpi_gpu,cz_midpi_gpu
+!
  real(mykind), dimension(:,:,:,:), allocatable :: wbuf1s_gpu, wbuf2s_gpu, wbuf3s_gpu, wbuf4s_gpu, wbuf5s_gpu, wbuf6s_gpu
  real(mykind), dimension(:,:,:,:), allocatable :: wbuf1r_gpu, wbuf2r_gpu, wbuf3r_gpu, wbuf4r_gpu, wbuf5r_gpu, wbuf6r_gpu
  real(mykind), dimension(:,:,:), allocatable :: divbuf1s_gpu, divbuf2s_gpu, divbuf3s_gpu, divbuf4s_gpu, divbuf5s_gpu, divbuf6s_gpu
  real(mykind), dimension(:,:,:), allocatable :: divbuf1r_gpu, divbuf2r_gpu, divbuf3r_gpu, divbuf4r_gpu, divbuf5r_gpu, divbuf6r_gpu
  logical, dimension(:,:,:), allocatable :: ducbuf1s_gpu, ducbuf2s_gpu, ducbuf3s_gpu, ducbuf4s_gpu, ducbuf5s_gpu, ducbuf6s_gpu
  logical, dimension(:,:,:), allocatable :: ducbuf1r_gpu, ducbuf2r_gpu, ducbuf3r_gpu, ducbuf4r_gpu, ducbuf5r_gpu, ducbuf6r_gpu
-
+!
  real(mykind), dimension(:,:,:,:), allocatable :: wbuf1s, wbuf2s, wbuf3s, wbuf4s, wbuf5s, wbuf6s
  real(mykind), dimension(:,:,:,:), allocatable :: wbuf1r, wbuf2r, wbuf3r, wbuf4r, wbuf5r, wbuf6r
  real(mykind), dimension(:,:,:), allocatable :: divbuf1s, divbuf2s, divbuf3s, divbuf4s, divbuf5s, divbuf6s
  real(mykind), dimension(:,:,:), allocatable :: divbuf1r, divbuf2r, divbuf3r, divbuf4r, divbuf5r, divbuf6r
  logical, dimension(:,:,:), allocatable :: ducbuf1s, ducbuf2s, ducbuf3s, ducbuf4s, ducbuf5s, ducbuf6s
  logical, dimension(:,:,:), allocatable :: ducbuf1r, ducbuf2r, ducbuf3r, ducbuf4r, ducbuf5r, ducbuf6r
-
- real(mykind),dimension(:,:), allocatable :: wallpfield,wallpfield_gpu
- real(mykind),dimension(:,:,:), allocatable :: slicexy,slicexy_gpu
- real(mykind),dimension(:,:,:,:), allocatable :: fhat,fhat_gpu
-
+!
+ real(mykind), dimension(:,:), allocatable :: wallpfield,wallpfield_gpu
+ real(mykind), dimension(:,:,:), allocatable :: slicexy,slicexy_gpu
+ real(mykind), dimension(:,:,:,:), allocatable :: fhat,fhat_gpu
+!
  real(mykind), allocatable, dimension(:,:,:) :: vf_df_old
  real(mykind), allocatable, dimension(:,:,:) :: uf
  real(mykind), allocatable, dimension(:,:) :: evmax_mat_yz
@@ -185,17 +197,22 @@ module mod_streams
  attributes(device) :: fhat_trans_gpu, fl_trans_gpu
  attributes(device) :: temperature_trans_gpu
  attributes(device) :: wv_gpu, wv_trans_gpu
-
+!
  integer :: local_comm, mydev
  attributes(device) :: w_gpu,fl_gpu,fln_gpu
  attributes(device) :: temperature_gpu,ducros_gpu
  attributes(device) :: dcsidx_gpu,dcsidx2_gpu,dcsidxs_gpu
  attributes(device) :: detady_gpu,detady2_gpu,detadys_gpu
  attributes(device) :: dzitdz_gpu,dzitdz2_gpu,dzitdzs_gpu
+ attributes(device) :: dcsidxh_gpu,detadyh_gpu,dzitdzh_gpu
  attributes(device) :: x_gpu,y_gpu,yn_gpu,z_gpu
+ attributes(device) :: xh_gpu,yh_gpu,zh_gpu
  attributes(device) :: xg_gpu
  attributes(device) :: coeff_deriv1_gpu
  attributes(device) :: coeff_clap_gpu
+ attributes(device) :: coeff_deriv1s_gpu
+ attributes(device) :: coeff_midpi_gpu
+ attributes(device) :: cx_midpi_gpu,cy_midpi_gpu,cz_midpi_gpu
  attributes(device) :: ibcnr_gpu
  attributes(device) :: dcoe_gpu
  attributes(device) :: wmean_gpu

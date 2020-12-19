@@ -13,6 +13,7 @@ subroutine write_wallpressure
  logical :: async=.true.
  integer, parameter :: i_skip_p=1, k_skip_p=1
  integer, parameter :: i_skip_s=1, j_skip_s=1
+ real(mykind), dimension(nx,nz) :: wallpfield2
 !
  if (mod(icyc,delta_cyc_p)==0) then
 !
@@ -65,6 +66,63 @@ subroutine write_wallpressure
    if(icyc == ncyc0+ncyc) then
     wait(122)
     close(122)
+   endif
+  endif
+!
+ endif
+!
+!if (mod(icyc,delta_cyc_p)==0) then
+ if (mod(icyc,delta_cyc_p)==-1) then
+!
+  write(chicyc,"(I7.7)") icyc
+!
+  !$cuf kernel do(2) <<<*,*>>> 
+  do k=1,nz,k_skip_p
+   do i=1,nx,i_skip_p
+    rho  = w_gpu(i,180,k,1)
+    rhou = w_gpu(i,180,k,2)
+    rhov = w_gpu(i,180,k,3)
+    rhow = w_gpu(i,180,k,4)
+    rhoe = w_gpu(i,180,k,5)
+    ri   = 1._mykind/rho
+    uu   = rhou*ri
+    vv   = rhov*ri
+    ww   = rhow*ri
+    qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
+    pp   = gm1*(rhoe-rho*qq)
+    wallpfield_gpu(i,k) = pp
+   enddo
+  enddo
+  !@cuf iercuda=cudaDeviceSynchronize()
+!
+  if(async) then
+   if(icyc == ncyc0 + delta_cyc_p) then
+    open(144,file='WALLP/wallpressure180_'//chx//'_'//chz//'_'//chicyc//'.bin',form='unformatted',asynchronous="yes")
+   else
+    wait(144)
+    if(mod(icyc-ncyc0,delta_restart_file) == 0) then
+     close(144)
+     open(144,file='WALLP/wallpressure180_'//chx//'_'//chz//'_'//chicyc//'.bin',form='unformatted',asynchronous="yes")
+    endif
+   endif
+  endif
+!
+  wallpfield2 = wallpfield_gpu
+!
+  if(async) then
+   write(144, asynchronous="no") icyc,telaps,nx,nz !,i_skip_p,k_skip_p
+   write(144, asynchronous="yes") wallpfield2
+  else
+   open(144,file='WALLP/wallpressure180_'//chx//'_'//chz//'.bin',form='unformatted',position="append")
+   write(144) icyc,telaps,nx,nz !,i_skip_p,k_skip_p
+   write(144) wallpfield2
+   close(144)
+  endif
+!
+  if(async) then
+   if(icyc == ncyc0+ncyc) then
+    wait(144)
+    close(144)
    endif
   endif
 !

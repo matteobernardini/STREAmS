@@ -21,13 +21,21 @@ subroutine allocate_vars()
  allocate(dcsidx_gpu(nx),dcsidx2_gpu(nx),dcsidxs_gpu(nx))
  allocate(detady_gpu(ny),detady2_gpu(ny),detadys_gpu(ny))
  allocate(dzitdz_gpu(nz),dzitdz2_gpu(nz),dzitdzs_gpu(nz))
+ allocate(dcsidxh_gpu(0:nx))
+ allocate(detadyh_gpu(0:ny))
+ allocate(dzitdzh_gpu(0:nz))
  allocate(x_gpu(1-ng:nx+ng))
  allocate(y_gpu(1-ng:ny+ng))
  allocate(yn_gpu(1:ny+1))
  allocate(z_gpu(1-ng:nz+ng))
  allocate(xg_gpu(1-ng:nxmax+ng+1))
  allocate(coeff_deriv1_gpu(3))
+ allocate(coeff_deriv1s_gpu(3))
  allocate(coeff_clap_gpu(0:3))
+ allocate(coeff_midpi_gpu(3))
+ allocate(cx_midpi_gpu(0:nx,-2:3))
+ allocate(cy_midpi_gpu(0:ny,-2:3))
+ allocate(cz_midpi_gpu(0:nz,-2:3))
  allocate(fhat_gpu(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,6))
  allocate(ibcnr_gpu(6))
  allocate(dcoe_gpu(4,4))
@@ -106,13 +114,21 @@ subroutine allocate_vars()
  allocate(dcsidx(nx),dcsidx2(nx),dcsidxs(nx))
  allocate(detady(ny),detady2(ny),detadys(ny))
  allocate(dzitdz(nz),dzitdz2(nz),dzitdzs(nz))
+ allocate(dcsidxh(0:nx))
+ allocate(detadyh(0:ny))
+ allocate(dzitdzh(0:nz))
  allocate(x(1-ng:nx+ng))
  allocate(y(1-ng:ny+ng))
  allocate(yn(1:ny+1))
  allocate(z(1-ng:nz+ng))
  allocate(xg(1-ng:nxmax+ng+1))
  allocate(coeff_deriv1(3))
+ allocate(coeff_deriv1s(3))
  allocate(coeff_clap(0:3))
+ allocate(coeff_midpi(3))
+ allocate(cx_midpi(0:nx,-2:3))
+ allocate(cy_midpi(0:ny,-2:3))
+ allocate(cz_midpi(0:nz,-2:3))
  allocate(fhat(1-ng:nx+ng,1-ng:ny+ng,1-ng:nz+ng,6)) ! Size increased to exchange divergence
  allocate(ibcnr(6))
  allocate(dcoe(4,4))
@@ -125,6 +141,12 @@ subroutine allocate_vars()
  allocate(amat_df(3,3,ny))
  allocate(wallpfield(nx,nz))
  allocate(slicexy(nv,nx,ny))
+ allocate(xh(0:nx))
+ allocate(yh(0:ny))
+ allocate(zh(0:nz))
+ allocate(xgh(0:nxmax))
+ allocate(ygh(0:nymax))
+ allocate(zgh(0:nzmax))
 !
  allocate(ibc(6))
  allocate(dxg(nxmax))
@@ -207,13 +229,24 @@ subroutine copy_cpu_to_gpu()
  dzitdz_gpu       = dzitdz      
  dzitdz2_gpu      = dzitdz2     
  dzitdzs_gpu      = dzitdzs     
+ dcsidxh_gpu      = dcsidxh
+ detadyh_gpu      = detadyh
+ dzitdzh_gpu      = dzitdzh
  x_gpu            = x
  y_gpu            = y
  yn_gpu           = yn
  z_gpu            = z
+ xh_gpu           = xh
+ yh_gpu           = yh
+ zh_gpu           = zh
  xg_gpu           = xg
  coeff_deriv1_gpu = coeff_deriv1
+ coeff_deriv1s_gpu= coeff_deriv1s
  coeff_clap_gpu   = coeff_clap
+ coeff_midpi_gpu  = coeff_midpi
+ cx_midpi_gpu     = cx_midpi
+ cy_midpi_gpu     = cy_midpi
+ cz_midpi_gpu     = cz_midpi
 !fhat_gpu         = fhat
  ibcnr_gpu        = ibcnr
  dcoe_gpu         = dcoe
@@ -241,13 +274,24 @@ subroutine copy_cpu_to_gpu()
  call move_alloc( dzitdz       , dzitdz_gpu      )
  call move_alloc( dzitdz2      , dzitdz2_gpu     )
  call move_alloc( dzitdzs      , dzitdzs_gpu     )
+ call move_alloc( dcsidxh      , dcsidxh_gpu     )
+ call move_alloc( detadyh      , detadyh_gpu     )
+ call move_alloc( dzitdzh      , dzitdzh_gpu     )
  call move_alloc( x            , x_gpu           )
  call move_alloc( y            , y_gpu           )
  call move_alloc( yn           , yn_gpu          )
  call move_alloc( z            , z_gpu           )
+ call move_alloc( xh           , xh_gpu          )
+ call move_alloc( yh           , yh_gpu          )
+ call move_alloc( zh           , zh_gpu          )
  call move_alloc( xg           , xg_gpu          )
  call move_alloc( coeff_deriv1 , coeff_deriv1_gpu)
+ call move_alloc( coeff_deriv1s, coeff_deriv1s_gpu)
  call move_alloc( coeff_clap   , coeff_clap_gpu  )
+ call move_alloc( coeff_midpi  , coeff_midpi_gpu )
+ call move_alloc( cx_midpi     , cx_midpi_gpu    )
+ call move_alloc( cy_midpi     , cy_midpi_gpu    )
+ call move_alloc( cz_midpi     , cz_midpi_gpu    )
  call move_alloc( fhat         , fhat_gpu        )
  call move_alloc( ibcnr        , ibcnr_gpu       )
  call move_alloc( dcoe         , dcoe_gpu        )
@@ -280,6 +324,9 @@ subroutine copy_gpu_to_cpu
  call move_alloc(xg_gpu,xg)
  call move_alloc(y_gpu , y)
  call move_alloc(z_gpu , z)
+ call move_alloc(xh_gpu,xh)
+ call move_alloc(yh_gpu,yh)
+ call move_alloc(zh_gpu,zh)
  call move_alloc(fl_gpu, fl)
 #endif
  do iv=1,5
@@ -307,6 +354,9 @@ subroutine reset_cpu_gpu
  call move_alloc(xg,xg_gpu)
  call move_alloc(y , y_gpu)
  call move_alloc(z , z_gpu)
+ call move_alloc(xh,xh_gpu)
+ call move_alloc(yh,yh_gpu)
+ call move_alloc(zh,zh_gpu)
  call move_alloc(fl, fl_gpu)
 #endif
 end subroutine reset_cpu_gpu

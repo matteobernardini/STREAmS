@@ -100,7 +100,7 @@ OBJ_FILES = alloc.o bcdf.o bcextr.o bcfree.o bc.o bcrelax.o bcshk.o bcswap.o \
     finalize.o generategrid.o generateinflowrand.o generatewmean_channel.o \
     generatewmean.o init_channel.o init.o initurb.o init_windtunnel.o osw.o pgrad.o \
     prims.o printres.o readdf.o readgrid.o readinp.o readrst.o readstat.o rk.o sensor.o \
-    setup.o solver.o startmpi.o stats.o step.o target_reystress.o updateghost.o utility.o \
+    setup.o solver.o startmpi.o stats.o step.o target_reystress.o tbforce.o updateghost.o utility.o \
     visflx.o writedf.o writefield.o writefieldvtk.o writegridplot3d.o writerst.o \
     writestatbl.o writestatchann.o writestat.o writestatzbl.o write_wallpressure.o
 

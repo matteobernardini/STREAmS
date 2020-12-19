@@ -19,6 +19,7 @@ subroutine setup
   if (masterproc) write(*,*) 'Reading mesh'
   call readgrid()
  endif
+ if (masterproc) write(*,*) 'Computing metrics'
  call computemetrics()
  if (enable_plot3d>0) call writegridplot3d()
 !===================================================
