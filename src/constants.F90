@@ -51,7 +51,7 @@ subroutine constants
   if (.true.) then
    rm_infinity  = rm/sqrt(1._mykind-rmfac) ! Mach number at infinity
    rmfac = 0.5_mykind*gm1*rm_infinity*rm_infinity*rfac
-   alfa_channel = (trat*(1._mykind+rmfac)-1._mykind)/rmfac ! Alfa value (see PRF Pirozzoli)
+   alfa_channel = (tb_tw*(1._mykind+rmfac)-1._mykind)/rmfac ! Alfa value (see PRF Pirozzoli)
    if (masterproc) write(*,*) 'Mach infinity = ', rm_infinity
    if (masterproc) write(*,*) 'Alfa channel = ', alfa_channel
    tinf_tw = 1._mykind/(1._mykind+0.5_mykind*gm1*rm_infinity*rm_infinity*rfac)
