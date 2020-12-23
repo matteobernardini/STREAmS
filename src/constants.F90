@@ -19,7 +19,7 @@ subroutine constants
  write(chz,1003) ncoords(3)
  1003 format(I3.3)
 !
- s2tinf = 110.4_mykind/tref_dimensional
+ if (visc_type==2) s2tinf = 110.4_mykind/tref_dimensional
 !
  rho0 = 1._mykind
  u0   = sqrt(gamma)*rm
