@@ -19,7 +19,7 @@
 solving the fully compressible Navier-Stokes equations. Currently, three canonical wall-bounded flows can be simulated:
 * compressible turbulent channel flow
 * compressible zero-pressure-gradient turbulent boundary layer
-* supersonic oblique shock wave/turbulent boundary-layer interaction
+* supersonic oblique shock-wave/turbulent boundary-layer interaction
 STREAmS can be used both on local cluster and massively parallel HPC architectures. 
 
 # Compiling
@@ -60,7 +60,7 @@ PREC
 STREAmS can be usually executed using a standard MPI launcher, e.g. `mpirun`.
 In addition to the executable, in the running folder you need:
 * `input.dat`: file defining the physical and numerical setup of the simulation, to be customized
-according to the desired needs. Detailed description input.dat file is given below.
+according to the desired needs. A detailed description of the input.dat file is given below.
 Some examples of input.dat files are available in the `examples` folder.
 * `database_bl.dat`: only required for the `boundary layer` and `shock-boundary layer interaction` flows
 (this file does not have to be modified by the user). The file is available in the examples folder.
@@ -109,7 +109,7 @@ srun ./streams
 
 `iflow` defines the type of flow. 0 = channel, 1 = boundary layer, 2 = shock/boundary-layer interaction
 
-`rlx rly rlz` real numbers defining the size of the Cartesian domain along the three directions 
+`rlx rly rlz` real numbers defining the size of the Cartesian domain along the three coordinate directions 
 (x=streamwise, y=wall-normal, z=spanwise)
 
 `nxmax  nymax  nzmax` integer numbers defining the number of grid nodes along each direction
