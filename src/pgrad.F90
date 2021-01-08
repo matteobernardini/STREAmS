@@ -40,7 +40,7 @@ subroutine pgrad
 ! 
  call mpi_allreduce(bulk5,bulk5g,5,mpi_prec,mpi_sum,mp_cart,iermpi)
 ! 
- bulk5g  = bulk5g/nxmax/nzmax/(yn_gpu(ny+1)-yn_gpu(1))
+ bulk5g  = bulk5g/nxmax/nzmax/(yn(ny+1)-yn(1))
  dpdx    = bulk5g(2)
  rhobulk = bulk5g(3)
  ubulk   = bulk5g(4)/rhobulk

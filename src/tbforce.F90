@@ -41,9 +41,11 @@ subroutine tbforce
 ! 
  call mpi_allreduce(bulkt,bulktg,1,mpi_prec,mpi_sum,mp_cart,iermpi)
 ! 
- bulktg   = bulktg/nxmax/nzmax/(yn_gpu(ny+1)-yn_gpu(1))
+ bulktg   = bulktg/nxmax/nzmax/(yn(ny+1)-yn(1))
  bulktg   = bulktg/rhobulk/ubulk
  tbtarget = trelax*target_tbulk+(1._mykind-trelax)*bulktg
+!
+ bulkcooling = 0._mykind
 !
  !$cuf kernel do(3) <<<*,*>>> 
  do k=1,nz
@@ -64,9 +66,16 @@ subroutine tbforce
     ttnew = tt+tbtarget-bulktg 
     pp    = rho*ttnew
     w_gpu(i,j,k,5) = pp*gm+rho*qq
+    dy = yn_gpu(j+1)-yn_gpu(j)
+    bulkcooling = bulkcooling+(w_gpu(i,j,k,5)-rhoe)*dy
    enddo
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
+!
+ if (mod(icyc-ncyc0,nprint)==0) then
+  call mpi_allreduce(MPI_IN_PLACE,bulkcooling,1,mpi_prec,mpi_sum,mp_cart,iermpi)
+  bulkcooling = bulkcooling/nxmax/nzmax/(yn(ny+1)-yn(1))/alpdt
+ endif
 !
 end subroutine tbforce

@@ -98,7 +98,7 @@ OBJ_FILES = alloc.o bcdf.o bcextr.o bcfree.o bc.o bcrelax.o bcshk.o bcswap.o \
     bcwall.o bcwall_pl.o bcwall_staggered.o check_input.o computeav.o computemetrics.o \
     computeresidual.o constants.o df_par.o digital_filtering_util.o \
     finalize.o generategrid.o generateinflowrand.o generatewmean_channel.o \
-    generatewmean.o init_channel.o init.o initurb.o init_windtunnel.o osw.o pgrad.o \
+    generatewmean.o heatflux_compute.o init_channel.o init.o initurb.o init_windtunnel.o osw.o pgrad.o \
     prims.o printres.o readdf.o readgrid.o readinp.o readrst.o readstat.o rk.o sensor.o \
     setup.o solver.o startmpi.o stats.o step.o target_reystress.o tbforce.o updateghost.o utility.o \
     visflx.o writedf.o writefield.o writefieldvtk.o writegridplot3d.o writerst.o \

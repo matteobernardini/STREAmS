@@ -11,7 +11,7 @@ subroutine visflx
  real(mykind) :: sig11,sig12,sig13
  real(mykind) :: sig21,sig22,sig23
  real(mykind) :: sig31,sig32,sig33
- real(mykind) :: sigq,sigx,sigy,sigz,tt
+ real(mykind) :: sigq,sigx,sigy,sigz,tt,sigqt,sigah
  real(mykind) :: uu,vv,ww
  real(mykind) :: tx,ty,tz
  real(mykind) :: ux,uy,uz
@@ -22,6 +22,7 @@ subroutine visflx
  real(mykind) :: wlap,wlapx,wlapy,wlapz
  real(mykind) :: tlap,tlapx,tlapy,tlapz
  real(mykind) :: sqgmr2,sqgmr2h,tt2,sqrtt,sdivt,sdivt1
+ real(mykind) :: dy
 !
  real(mykind) :: ttt,st,et
 !
@@ -154,12 +155,15 @@ subroutine visflx
     sig22 = 2._mykind*(vy-div3l)
     sig23 = vz+wy
     sig33 = 2._mykind*(wz-div3l)
-    sigx =  rmutx*sig11       +  rmuty*sig12       +  rmutz*sig13       +  rmut*(ulap)
-    sigy =  rmutx*sig12       +  rmuty*sig22       +  rmutz*sig23       +  rmut*(vlap)
-    sigz =  rmutx*sig13       +  rmuty*sig23       +  rmutz*sig33       +  rmut*(wlap)
+    sigx  = rmutx*sig11       +  rmuty*sig12       +  rmutz*sig13       +  rmut*(ulap)
+    sigy  = rmutx*sig12       +  rmuty*sig22       +  rmutz*sig23       +  rmut*(vlap)
+    sigz  = rmutx*sig13       +  rmuty*sig23       +  rmutz*sig33       +  rmut*(wlap)
+    sigqt = (rmutx*tx+rmuty*ty+rmutz*tz+rmut*tlap)*ggmopr ! Conduction
+    if (iflow==0) fhat_gpu(i,j,k,1) = sigqt
+    sigah = (sig11*ux+sig12*uy+sig13*uz+sig12*vx+sig22*vy+sig23*vz+sig13*wx+sig23*wy+sig33*wz)*rmut ! Aerodynamic heating
+    if (iflow==0) fhat_gpu(i,j,k,2) = sigah
 !
-    sigq = sigx*uu+sigy*vv+sigz*ww+(sig11*ux+sig12*uy+sig13*uz+sig12*vx+sig22*vy+sig23*vz+sig13*wx+sig23*wy+sig33*wz)*rmut+&
-          (rmutx*tx+rmuty*ty+rmutz*tz+rmut*tlap)*ggmopr 
+    sigq = sigx*uu+sigy*vv+sigz*ww+sigah+sigqt
 !
     fl_gpu(i,j,k,2) = fl_gpu(i,j,k,2) - sigx
     fl_gpu(i,j,k,3) = fl_gpu(i,j,k,3) - sigy
@@ -170,7 +174,9 @@ subroutine visflx
   enddo
  enddo
  !@cuf iercuda=cudaDeviceSynchronize()
-
+!
+ if (iflow==0.and.mod(icyc-ncyc0,nprint)==0) call heatflux_compute()
+!
 !et = mpi_wtime()
 !ttt = et-st
 !if (masterproc) write(error_unit,*) 'Viscous-I time =', ttt

@@ -21,7 +21,7 @@ subroutine solver
   dtmin = abs(cfl)
  endif
  if (masterproc) write(*,*) 'Done'
- call updateghost()
+ call updateghost() ! Needed here only for subsequent prims call
  call prims()
  if (tresduc>0._mykind.and.tresduc<1._mykind) then
   call sensor()

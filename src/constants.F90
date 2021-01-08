@@ -94,7 +94,8 @@ subroutine constants
  taw   = t0*(1._mykind+0.5_mykind*gm1*rm*rm*rfac)
  twall = taw*trat
 !
- if (iflow==0) twall = t0
+ if (iflow==-1) twall = t0
+ if (iflow==0)  twall = t0
 !
 ! winf is the vector of conservative variables at freestream conditions
 !

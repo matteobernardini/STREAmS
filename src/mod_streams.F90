@@ -58,6 +58,8 @@ module mod_streams
  real(mykind), parameter :: pr     = 0.72_mykind
 !real(mykind), parameter :: gamma  = 1.08_mykind
 !real(mykind), parameter :: pr     = 0.455_mykind
+!real(mykind), parameter :: gamma  = 1.1312_mykind
+!real(mykind), parameter :: pr     = 0.455_mykind
  real(mykind), parameter :: gm1    = gamma-1._mykind
  real(mykind), parameter :: gm     = 1._mykind/gm1
  real(mykind), parameter :: ggmopr = gamma*gm/pr
@@ -81,6 +83,7 @@ module mod_streams
  real(mykind) :: dftscaling
  real(mykind) :: ximp,thetas,deflec,tanhsfac,xsh
  real(mykind) :: pgradf
+ real(mykind) :: heatflux,aeroheat,bulkcooling
  integer :: ivis
  logical :: masterproc
  logical :: dfupdated
@@ -107,6 +110,7 @@ module mod_streams
  integer :: icyc,ncyc,ncyc0,nstep,nprint
 !
 ! Coordinates and metric related quantities 
+ integer :: jbchan ! Parameter for grid stretching (channel mesh)
  real(mykind) :: rlx,rly,rlz,rlywr,dyp_target
  real(mykind), dimension(:), allocatable :: x,y,z,yn
  real(mykind), dimension(:), allocatable :: x_gpu,y_gpu,z_gpu,yn_gpu

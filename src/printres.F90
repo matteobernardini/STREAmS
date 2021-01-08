@@ -5,10 +5,13 @@ subroutine printres
  use mod_streams
  implicit none
 !
+ real(mykind) :: sumq
+!
  if (masterproc) then
   if (iflow==0) then
-   write(* ,100) icyc,telaps,rtrms,dpdx,rhobulk,ubulk,tbulk
-   write(20,100) icyc,telaps,rtrms,dpdx,rhobulk,ubulk,tbulk
+   sumq = heatflux+aeroheat+bulkcooling
+   write(* ,100) icyc,telaps,rtrms,dpdx,rhobulk,ubulk,tbulk,heatflux,aeroheat,bulkcooling,sumq
+   write(20,100) icyc,telaps,rtrms,dpdx,rhobulk,ubulk,tbulk,heatflux,aeroheat,bulkcooling,sumq
   else
    write(* ,100) icyc,telaps,rtrms
    write(20,100) icyc,telaps,rtrms
