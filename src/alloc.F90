@@ -26,7 +26,6 @@ subroutine allocate_vars()
  allocate(dzitdzh_gpu(0:nz))
  allocate(x_gpu(1-ng:nx+ng))
  allocate(y_gpu(1-ng:ny+ng))
- allocate(yn_gpu(1:ny+1))
  allocate(z_gpu(1-ng:nz+ng))
  allocate(xg_gpu(1-ng:nxmax+ng+1))
  allocate(coeff_deriv1_gpu(3))
@@ -119,7 +118,8 @@ subroutine allocate_vars()
  allocate(dzitdzh(0:nz))
  allocate(x(1-ng:nx+ng))
  allocate(y(1-ng:ny+ng))
- allocate(yn(1:ny+1))
+ allocate(yn(1:ny+1))    ! Both yn and yn_gpu must be always allocated
+ allocate(yn_gpu(1:ny+1))
  allocate(z(1-ng:nz+ng))
  allocate(xg(1-ng:nxmax+ng+1))
  allocate(coeff_deriv1(3))
@@ -213,6 +213,9 @@ subroutine copy_cpu_to_gpu()
    enddo
   enddo
  enddo
+!
+ yn_gpu           = yn
+!
 #ifdef USE_CUDA
  w_gpu            = w_order
 !fl_gpu           = fl
@@ -234,7 +237,6 @@ subroutine copy_cpu_to_gpu()
  dzitdzh_gpu      = dzitdzh
  x_gpu            = x
  y_gpu            = y
- yn_gpu           = yn
  z_gpu            = z
  xh_gpu           = xh
  yh_gpu           = yh
@@ -279,7 +281,6 @@ subroutine copy_cpu_to_gpu()
  call move_alloc( dzitdzh      , dzitdzh_gpu     )
  call move_alloc( x            , x_gpu           )
  call move_alloc( y            , y_gpu           )
- call move_alloc( yn           , yn_gpu          )
  call move_alloc( z            , z_gpu           )
  call move_alloc( xh           , xh_gpu          )
  call move_alloc( yh           , yh_gpu          )
