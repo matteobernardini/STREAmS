@@ -6,6 +6,7 @@ subroutine bcwall(ilat)
  implicit none
 !
  integer :: i,k,l,ilat
+ real(mykind) :: rho,uu,vv,ww,qq,pp,tt,rhoe
 !
  if (ilat==1) then     ! left side
  elseif (ilat==2) then ! right side
@@ -18,11 +19,21 @@ subroutine bcwall(ilat)
     w_gpu(i,1,k,4) = 0._mykind 
     w_gpu(i,1,k,5) = w_gpu(i,1,k,1)*gm*twall
     do l=1,ng
-     w_gpu(i,1-l,k,1) =    w_gpu(i,1+l,k,1) ! rho   is even
-     w_gpu(i,1-l,k,2) = 2._mykind*w_gpu(i,1,k,2) - w_gpu(i,1+l,k,2) ! rho*u is odd	
-     w_gpu(i,1-l,k,3) = 2._mykind*w_gpu(i,1,k,3) - w_gpu(i,1+l,k,3) ! rho*v is odd 
-     w_gpu(i,1-l,k,4) = 2._mykind*w_gpu(i,1,k,4) - w_gpu(i,1+l,k,4) ! rho*w is odd
-     w_gpu(i,1-l,k,5) =    w_gpu(i,1+l,k,5) ! rho*E is even
+     rho  = w_gpu(i,1+l,k,1)
+     uu   = w_gpu(i,1+l,k,2)/w_gpu(i,1+l,k,1)
+     vv   = w_gpu(i,1+l,k,3)/w_gpu(i,1+l,k,1)
+     ww   = w_gpu(i,1+l,k,4)/w_gpu(i,1+l,k,1)
+     rhoe = w_gpu(i,1+l,k,5)
+     qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
+     pp   = gm1*(rhoe-rho*qq)
+     tt   = pp/rho
+     tt   = 2._mykind*twall-tt
+     rho  = pp/tt
+     w_gpu(i,1-l,k,1) =  rho
+     w_gpu(i,1-l,k,2) = -rho*uu
+     w_gpu(i,1-l,k,3) = -rho*vv
+     w_gpu(i,1-l,k,4) = -rho*ww
+     w_gpu(i,1-l,k,5) = pp*gm+qq*rho
     enddo
    enddo
   enddo
@@ -36,11 +47,21 @@ subroutine bcwall(ilat)
     w_gpu(i,ny,k,4) = 0._mykind 
     w_gpu(i,ny,k,5) = w_gpu(i,ny,k,1)*gm*twall
     do l=1,ng
-     w_gpu(i,ny+l,k,1) =    w_gpu(i,ny-l,k,1) ! rho   is even
-     w_gpu(i,ny+l,k,2) = 2._mykind*w_gpu(i,ny,k,2) - w_gpu(i,ny-l,k,2) ! rho*u is odd	
-     w_gpu(i,ny+l,k,3) = 2._mykind*w_gpu(i,ny,k,3) - w_gpu(i,ny-l,k,3) ! rho*v is odd 
-     w_gpu(i,ny+l,k,4) = 2._mykind*w_gpu(i,ny,k,4) - w_gpu(i,ny-l,k,4) ! rho*w is odd
-     w_gpu(i,ny+l,k,5) =    w_gpu(i,ny-l,k,5) ! rho*E is even
+     rho  = w_gpu(i,ny-l,k,1)
+     uu   = w_gpu(i,ny-l,k,2)/w_gpu(i,ny-l,k,1)
+     vv   = w_gpu(i,ny-l,k,3)/w_gpu(i,ny-l,k,1)
+     ww   = w_gpu(i,ny-l,k,4)/w_gpu(i,ny-l,k,1)
+     rhoe = w_gpu(i,ny-l,k,5)
+     qq   = 0.5_mykind*(uu*uu+vv*vv+ww*ww)
+     pp   = gm1*(rhoe-rho*qq)
+     tt   = pp/rho
+     tt   = 2._mykind*twall-tt
+     rho  = pp/tt
+     w_gpu(i,ny+l,k,1) =  rho
+     w_gpu(i,ny+l,k,2) = -rho*uu
+     w_gpu(i,ny+l,k,3) = -rho*vv
+     w_gpu(i,ny+l,k,4) = -rho*ww
+     w_gpu(i,ny+l,k,5) = pp*gm+qq*rho
     enddo
    enddo
   enddo
