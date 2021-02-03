@@ -1,26 +1,26 @@
 subroutine solver
 !
-! Solve the NS equations
+! Solve the compressible NS equations
 !
  use mod_streams
  implicit none
 !
  real(mykind) :: elapsed,startTiming,endTiming
+!
  integer :: i
  logical :: stop_streams
 !
- icyc = ncyc0
+ icyc   = ncyc0
  telaps = telaps0
 !
+!Copy arrays from CPU to GPU or move alloc
  call copy_cpu_to_gpu()
 !
  if (masterproc) write(*,*) 'Compute time step'
- if (cfl>0._mykind) then
-  call step()
- else
-  dtmin = abs(cfl)
- endif
+ dtmin = abs(cfl)
+ if (cfl>0._mykind) call step()
  if (masterproc) write(*,*) 'Done'
+!
  call updateghost() ! Needed here only for subsequent prims call
  call prims()
  if (tresduc>0._mykind.and.tresduc<1._mykind) then
@@ -38,37 +38,8 @@ subroutine solver
   icyc = icyc+1
 !
   call rk() ! Third-order RK scheme
-! if(io_type > 0) then
-!  call write_wallpressure
-! endif
- !
-  if (io_type>0) then
 !
-   if (mod(icyc,istat)==0) then
-    call updateghost()
-    call prims()
-    call copy_gpu_to_cpu()
-    if (iflow==-1) then
-    elseif (iflow==0) then
-     call stats1d()
-    else
-     call stats2d()
-    endif
-    call reset_cpu_gpu()
-   endif
-!
-   if (telaps>tsol(istore)) then
-    call updateghost()
-    call prims()
-    call copy_gpu_to_cpu()
-    if(enable_plot3d > 0) call writefield()
-    if(enable_vtk > 0) call writefieldvtk()
-    if (iflow>0) call writestatzbl()
-    istore = istore+1
-    call reset_cpu_gpu()
-   endif
-!
-  endif
+  if (io_type>0) call manage_solver()
 !
   if (mod(i,nprint)==0) then
    call computeresidual()
@@ -79,44 +50,9 @@ subroutine solver
    if (mod(i,nstep)==0) call step() ! Compute the time step
   endif
 !
-  if (io_type==1) then
-!
-   if (telaps>tsol_restart(istore_restart)) then
-    call updateghost()
-    call prims()
-    call copy_gpu_to_cpu()
-    call writerst_serial()
-    if (iflow==-1) then
-    elseif (iflow==0) then
-     call writestat1d()
-    else
-     call writestat2d_serial()
-     call writedf_serial()
-    endif
-    istore_restart = istore_restart+1
-    call reset_cpu_gpu()
-   endif
-!
-  elseif (io_type == 2) then
-!
-   if (telaps>tsol_restart(istore_restart)) then
-    call updateghost()
-    call prims()
-    call copy_gpu_to_cpu()
-    call writerst()
-    if (iflow==-1) then
-    elseif (iflow==0) then
-     call writestat1d()
-    else
-     call writestat2d()
-     call writedf()
-    endif
-    istore_restart = istore_restart+1
-    call reset_cpu_gpu()
-   endif
-  endif
-!
+  call mpi_barrier(mpi_comm_world,iermpi)
   inquire(file="stop.stop",exist=stop_streams)
+  call mpi_barrier(mpi_comm_world,iermpi)
   if (stop_streams) exit
 !
  enddo
