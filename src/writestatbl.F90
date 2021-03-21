@@ -147,7 +147,7 @@ subroutine writestatbl
     wrmsp  = sqrt(abs(w_av(18,i,j)/w_av(1,i,j)-wfav(i,j)*wfav(i,j)))/utau
     uvp    =         (w_av(19,i,j)/w_av(1,i,j)-ufav(i,j)*vfav(i,j)) /utau**2
     rhofac = sqrt(w_av(1,i,j)/rhow)
-    prmsp  = sqrt(abs(w_av(11,i,j)-w_av(5,i,j)**2)/tauw)
+    prmsp  = sqrt(abs(w_av(11,i,j)-w_av(5,i,j)**2))/tauw
     write(15,100) y99,yp,up,uvdp,urmsp,vrmsp,wrmsp,uvp,rhofac,prmsp
    enddo 
    close(15)
