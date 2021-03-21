@@ -110,7 +110,7 @@ module mod_streams
  integer :: icyc,ncyc,ncyc0,nstep,nprint
 !
 ! Coordinates and metric related quantities 
- integer :: jbchan ! Parameter for grid stretching (channel mesh)
+ integer :: jbgrid ! Parameter for grid stretching
  real(mykind) :: rlx,rly,rlz,rlywr,dyp_target
  real(mykind), dimension(:), allocatable :: x,y,z,yn
  real(mykind), dimension(:), allocatable :: x_gpu,y_gpu,z_gpu,yn_gpu
