@@ -61,21 +61,21 @@ subroutine readinp
  ibcnr = 0
  select case (iflow)
  case (-1)
-  ibc(1) = 1
-  ibc(2) = 4
-  ibc(3) = 2
+  ibc(1) = 1 ! Free stream
+  ibc(2) = 4 ! Extrapolation + non reflecting treatment
+  ibc(3) = 2 ! Extrapolation
   ibc(4) = 2
   ibc(5) = 2
   ibc(6) = 2
- case (0)
-  ibc(3) = 5
+ case (0) ! Channel
+  ibc(3) = 5 ! Staggered wall
   ibc(4) = 5
- case (1)
-  ibc(1) = 9
-  ibc(2) = 4
-  ibc(3) = 8
+ case (1) ! BL
+  ibc(1) = 9 ! Digital filtering
+  ibc(2) = 4 ! Extrapolation + non reflecting treatment
+  ibc(3) = 8 ! Wall + reflecting treatment
   ibc(4) = 4
- case (2)
+ case (2) ! SBLI
   ibc(1) = 9
   ibc(2) = 4
   ibc(3) = 8

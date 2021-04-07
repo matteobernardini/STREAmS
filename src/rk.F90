@@ -6,11 +6,32 @@ subroutine rk
  use mod_euler
  implicit none
 !
+ integer :: i1,i2,j1,j2,k1,k2,lmax,last_call
+ logical :: call2,call3
+!
  integer :: i,j,k,m,istep,ilat
  real(mykind) :: alp,dt,gam,gamdt,rho,rhodt
  real(mykind) :: elapsed,startTiming,endTiming
 !
- real(mykind) :: tt,st,et
+ lmax = iorder/2
+ i1 = 1  ; if (ibc(1)==4.or.ibc(1)==8) i1 = 2    ! Node 1  computed with characteristic decomposition
+ i2 = nx ; if (ibc(2)==4.or.ibc(2)==8) i2 = nx-1 ! Node nx computed with characteristic decomposition
+ j1 = 1  ; if (ibc(3)==4.or.ibc(3)==8) j1 = 2    ! Node 1  computed with characteristic decomposition
+ j2 = ny ; if (ibc(4)==4.or.ibc(4)==7) j2 = ny-1 ! Node ny computed with characteristic decomposition
+ k1 = 1  ; if (ibc(5)==4.or.ibc(5)==8) k1 = 2    ! Node 1  computed with characteristic decomposition
+ k2 = nz ; if (ibc(6)==4.or.ibc(6)==7) k2 = nz-1 ! Node nz computed with characteristic decomposition
+ last_call = 3
+ call2 = .false.
+ call3 = .false.
+ if (i1<=lmax) call2 = .true.
+ if (i2>=(nx-lmax+1)) call3 = .true.
+ if (.not.call3) then
+  if (call2) then
+   last_call = 2
+  else
+   last_call = 1
+  endif
+ endif
 !
  if (cfl>0._mykind) then
   dt = dtmin*cfl 
@@ -43,43 +64,31 @@ subroutine rk
    enddo
   enddo
  !@cuf iercuda=cudaDeviceSynchronize()
-!et = mpi_wtime()
-!tt = et-st
-!if (masterproc) write(error_unit,*) 'RK-I time =', tt
 !
 #ifdef CUDA_ASYNC
   call bc(0)
   call bcswap_prepare()
   call prims_int()
-  call euler_i(0+iorder/2,nx-iorder/2)
+  call euler_i(1+lmax,nx-lmax,1,last_call,i1,i2)
   call bcswap()
   call prims_ghost()
 !
-! Evaluation of Eulerian fluxes
+  if (call2) call euler_i(i1,lmax,2,last_call,i1,i2)
+  if (call3) call euler_i(nx-lmax+1,i2,3,last_call,i1,i2)
 !
-  call euler_i(0,iorder/2-1)
-  if (ibc(2)==4.or.ibc(2)==8) then
-   call euler_i(nx+1-iorder/2,nx-1)
-  else
-   call euler_i(nx+1-iorder/2,nx)
-  endif
 #else
   call updateghost()
   call prims()
-  if (ibc(2)==4.or.ibc(2)==8) then
-   call euler_i(0,nx-1)
-  else
-   call euler_i(0,nx)
-  endif
+  call euler_i(i1,i2,0,0,i1,i2)
 #endif
 !
 #ifdef CUDA_ASYNC
   call visflx()
 ! call visflx_stag()
   call bcswapdiv_prepare()
-  call euler_j()
+  call euler_j(j1,j2)
   call bcswapdiv()
-  if (ndim==3) call euler_k()
+  if (ndim==3) call euler_k(k1,k2)
 !
   if (istep==3.and.tresduc>0._mykind.and.tresduc<1._mykind) then
    call sensor()
@@ -92,8 +101,8 @@ subroutine rk
   endif
 !
 #else
-  call euler_j()
-  if (ndim==3) call euler_k()
+  call euler_j(j1,j2)
+  if (ndim==3) call euler_k(k1,k2)
   call visflx()
 ! call visflx_stag()
   call bcswapdiv_prepare()

@@ -48,4 +48,9 @@ subroutine finalize
   endif
  endif
 !
+ if (io_type /= 0) then
+  if (enable_plot3d>0) call writefield()
+  if (enable_vtk>0) call writefieldvtk()
+ endif
+!
 end subroutine finalize
