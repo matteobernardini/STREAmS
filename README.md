@@ -131,18 +131,16 @@ srun ./streams
 
  `Mach      Reynolds (friction)  temp_ratio   visc_type   Tref (dimensional)   turb_inflow`. `Mach` is the bulk Mach number for channel flow (defined with Twall) and the freestream Mach number for boundary layer and SBLI cases. `Reynolds` is the target friction Reynolds number. `temp_ratio` is the ratio between the wall temperature and the adiabatic wall temperature for boundary layer and SBLI, whereas for channel flow represents the ratio between bulk and wall temperature.  `visc_type` selects the viscosity law (visc_type=1 power law, visc_type=2 Sutherland law, with reference dimensional temperature specified by `Tref`). For boundary layers and SBLI, `turb_inflow` selects the turbulent inflow type (if > 0. implies digital filtering and its value is used to control/reduce temperature fluctuations, if < 0. implies recycling-rescaling method with constant spanwise shifting and its value denotes the location of the recycling station).  
 
- `istat  nstat` cumulative flow statistics are evaluate every istat iterations. nstat is the number of streamwise stations
-  at which flow statistics are extracted. nstat is meaningful for boundary layer flow (iflow > 0) 
+ `stat_control  xstat_num`. Cumulative flow statistics are evaluate every `stat_control` iterations. `xstat_num` is the number of streamwise stations at which flow statistics are extracted and is only meaningful for boundary layer and SBLI cases (`flow_type` > 0). 
 
- `xstat` streamwise locations of boundary layer flow statistics (iflow > 0)
-  20. 30. 40. 50. 60. 70. 80. 87.
+ `xstat_list` streamwise locations of boundary layer flow statistics (`flow_type` > 0)
 
- `dtsave dtsave_restart plot3d vtk` dt_save is the time interval between field output, dtsave_restart is the time interval
- between output of restart files, enable_plot3d>0 activates the plot3d format output,
- vtk>0  activates vtk format output.
+ `dtsave dtsave_restart enable_plot3d enable_vtk`. `dt_save` is the time interval between field output, `dtsave_restart` is the time interval
+ between output of restart files, `enable_plot3d`>0 activates the plot3d format output,
+ `enable_vtk`>0 activates vtk format output.
 
-  `irand` if < 0 produce not reproducible random sequences based on current time, if >=0 produces random sequences which
-are reproducible across different runs with the same configuration
+  `rand_type` if < 0 produces not reproducible random sequences based on current time, if >=0 produces random sequences which
+are reproducible across different runs with the same configuration.
 
 Typical input files for canonical flow cases are available.
 
