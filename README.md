@@ -120,6 +120,9 @@ srun ./streams
  `Ny_wr     Ly_wr      dy+_w  jbgrid` specify the wall-normal mesh features. In all cases`dy+_w` is the desired spacing at the wall in inner units, <img src="svgs/f860ead74a4dff89d33b26468c06bbf7.svg?invert_in_darkmode&sanitize=true" align=middle width=32.43933pt height=26.17758pt/>.
  When `flow_type >0`, `Ny_wr` denotes the number of grid points in the wall-resolved region, ranging from y=0 (wall) up to y=`Ly_wr`, where a sinh mapping is applied. Both `Ny_wr` and `Ly_wr` can be specified when iflow = 1 (turbulent boundary layer), then a geometric progression is applied from y=`Ly_wr` up to y = Ly. When iflow = 2 (shock/boundary-layer interaction), `Ny_wr` must be specified but `Ly_wr` is automatically computed.
 
+ `ng  visc_ord  ep_ord  weno_par`. Parameters to control the order of accuracy of the discretization. `ng` specifies the number of ghost
+nodes. `visc_ord` represents the order of accuracy for the computation of the viscous terms (must be even <=6). `ep_ord` represents the order of accuracy for the computation of the convective terms in the smooth flow regions (central scheme, must be even <=6). `weno_par` selects the order of accuracy (order = 2*`weno_par`-1) for the computation of the convective terms in the shocked flow regions (WENO recontruction, must be <=3).
+
  `MPI_x_split  MPI_z_split` define the MPI decomposition along x (streamwise) and z (spanwise). These numbers 
  must be consistent to `Nx`, `Ny`, and `Nz`. In particular the following divisions must have zero remainder:
  `Nx/MPI_x_split`, `Nz/MPI_z_split`. Moreover, for `flow_type`>0 cases also `Nx/MPI_z_split` and `Ny/MPI_x_split`
