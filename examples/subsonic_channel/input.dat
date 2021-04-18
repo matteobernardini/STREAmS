@@ -22,8 +22,8 @@
    Nx     Ny     Nz
   384    192    384
  
-  Ny_wr     Ly_wr      dy+_w
-  150       2.5         1.
+  Ny_wr     Ly_wr      dy+_w  jbgrid
+  150       2.5         1.      0 
 
  ng  visc_ord  ep_ord  weno_par (1==>ord_1,2==>ord_3, 3==>ord_5, 4==>ord_7)
   2     4        4        2  
@@ -37,7 +37,7 @@
  restart   num_iter   cfl   dt_control  print_control  io_type
     0       30000    .8        10           10            2
       
-  Mach      Reynolds (friction)  temp_ratio   visc_type   Tref (dimensional)   df_par
+  Mach      Reynolds (friction)  temp_ratio   visc_type   Tref (dimensional)   turb_inflow
    0.2        180.                  0.            1            273.15            0.75
   
  stat_control  xstat_num
