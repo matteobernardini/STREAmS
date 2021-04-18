@@ -27,7 +27,7 @@ Graphical Processing Units (GPUs).
 
 # Compiling
 
-STREAmS requires (1) a Fortran compiler and (2) an MPI library. For the GPU CUDA version, the PGI compiler
+STREAmS requires (1) a Fortran compiler and (2) an MPI library. For the GPU CUDA version, the NVIDIA compiler
 is required (tested using PGI 19.4 or more recent compilers). A Makefile with 
 predefined settings is available to facilitate compiling.
 Different compiling modes can be selected by changing the three variables:
@@ -110,17 +110,15 @@ srun ./streams
 
 # Preparing input.dat file
 
-`iflow` defines the type of flow. 0 = channel flow, 1 = boundary layer, 2 = shock/boundary-layer interaction
+`flow_type` defines the type of flow. 0 = channel flow, 1 = boundary layer, 2 = shock/boundary-layer interaction
 
-`rlx rly rlz` real numbers defining the size of the Cartesian domain along the three coordinate directions 
+`Lx Ly Lz` real numbers defining the size of the Cartesian domain along the three coordinate directions 
 (x=streamwise, y=wall-normal, z=spanwise)
 
-`nxmax  nymax  nzmax` integer numbers defining the number of grid nodes along each direction
+`Nx  Ny  Nz` integer numbers defining the number of grid nodes along each direction
  
- `nymaxwr   rlywr    dyp_target` specify the wall-normal mesh features. dyp_target is the desired spacing at the wall in inner units, <img src="svgs/f860ead74a4dff89d33b26468c06bbf7.svg?invert_in_darkmode&sanitize=true" align=middle width=32.43933pt height=26.17758pt/>.
- nymaxwr denotes the number of grid points in the wall-resolved region, ranging from y=0 (wall) up to y=rlywr, where a sinh mapping
- is applied. Both nymaxwr and rlywr can be specified when iflow = 1 (turbulent boundary layer), then a geometric progression is applied from
- y=rlywr up to y = rly. For iflow = 2 (shock/boundary-layer interaction), nymaxwr must be specified but rlywr is automatically computed.
+ `Ny_wr     Ly_wr      dy+_w  jbgrid` specify the wall-normal mesh features. In all cases`dy+_w` is the desired spacing at the wall in inner units, <img src="svgs/f860ead74a4dff89d33b26468c06bbf7.svg?invert_in_darkmode&sanitize=true" align=middle width=32.43933pt height=26.17758pt/>.
+ When `flow_type >0`, `Ny_wr` denotes the number of grid points in the wall-resolved region, ranging from y=0 (wall) up to y=`Ly_wr`, where a sinh mapping is applied. Both `Ny_wr` and `Ly_wr` can be specified when iflow = 1 (turbulent boundary layer), then a geometric progression is applied from y=`Ly_wr` up to y = Ly. When iflow = 2 (shock/boundary-layer interaction), `Ny_wr` must be specified but `Ly_wr` is automatically computed.
 
  `nblocks(1)  nblocks(3)` define the MPI decomposition along x (streamwise) and z (spanwise). These numbers 
  must be consistent to nxmax, nymax, and nzmax. In particular the following divisions must have zero remainder:
