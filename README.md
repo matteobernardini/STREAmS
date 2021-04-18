@@ -16,11 +16,13 @@
 ```
 
 `STREAmS` performs Direct Numerical Simulations of compressible turbulent flows in Cartesian geometry
-solving the fully compressible Navier-Stokes equations. Currently, three canonical wall-bounded flows can be simulated:
+solving the unsteady, fully compressible Navier-Stokes equations for a perfect gas.
+Currently, three canonical wall-bounded flows can be simulated:
 * compressible turbulent channel flow
 * compressible zero-pressure-gradient turbulent boundary layer
 * supersonic oblique shock-wave/turbulent boundary-layer interaction
-STREAmS can be used both on local cluster and massively parallel HPC architectures. 
+STREAmS can be used on both local clusters and massively parallel HPC architectures, including those based on
+Graphical Processing Units (GPUs). 
 
 # Compiling
 
