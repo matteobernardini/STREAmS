@@ -222,4 +222,4 @@ Typical input files for canonical flow cases are available.
 7) <img src="svgs/e8dfa6bfdb753c7e780b5fa7aee92971.svg?invert_in_darkmode&sanitize=true" align=middle width=36.095235pt height=26.17758pt/> the density scaled spanwise velocity rms, in viscous units  
 8) <img src="svgs/7764c497204b291fd5e3218cb50d2a2a.svg?invert_in_darkmode&sanitize=true" align=middle width=28.05957pt height=26.17758pt/>      the density scaled Reynolds shear stress, in viscous units
 9) <img src="svgs/b9943858c2a1621a8a2449fdec1bf1a9.svg?invert_in_darkmode&sanitize=true" align=middle width=52.296585pt height=29.42511pt/> the square root of the mean density, normalized with the wall density
-10) The pressure rms, normalized with the square root of the wall-shear stress. 
+10) The pressure rms, normalized with the wall-shear stress. 
