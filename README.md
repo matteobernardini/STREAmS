@@ -125,16 +125,11 @@ srun ./streams
  `Nx/MPI_x_split`, `Nz/MPI_z_split`. Moreover, for `flow_type`>0 cases also `Nx/MPI_z_split` and `Ny/MPI_x_split`
  must have zero remainder.  The product `MPI_x_split * MPI_z_split` must equal the total number of launched MPI processes.
 
- `sensor_threshold   xshock_imp   deflec_shock` <img src="svgs/c7b272ea7e9157f40452750471042300.svg?invert_in_darkmode&sanitize=true" align=middle width=114.522375pt height=22.83138pt/> is the WENO threshold (WENO is active if the shock sensor value exceeds `sensor_threshold`),
- `xshock_imp` is the shock abscissa and `deflec_shock` is the shock angle (used only when `flow_type` > 0).
+ `sensor_threshold   xshock_imp   deflec_shock`. `sensor_threshold` is the WENO threshold (WENO is active if the shock sensor value exceeds `sensor_threshold`), `xshock_imp` is the shock abscissa and `deflec_shock` is the shock angle (used only when `flow_type` > 0).
 
- `idiski ncyc   cfl  nstep nprint io_type` idiski selects the start type (0=init, 1=restart, 2=collect statistics at runtime), ncyc the total number
- of iterations, cfl is the CFL number. The time step is re-evaluated every nstep iterations, nprint 
- the residual file is printed every nprint iterations and io_type is selects the type of I/O (io_type=0 no I/O, io_type=1, serial I/O, io_type=2, MPI I/O).
+ `restart   num_iter   cfl   dt_control  print_control  io_type`. `restart` selects the start type (0=init, 1=restart run and statistics, 2=restart and continue statistics), `num_iter` the total number of iterations, `cfl` is the CFL number. The time step is re-evaluated every `dt_control` iterations. The residual file is printed every `print_control` iterations and `io_type` selects the type of I/O for restart (io_type=0 no I/O, io_type=1 serial I/O, io_type=2 MPI I/O).
 
- `rm      re (friction)  twall/taw visc_type s2tinf` Mach number, <img src="svgs/1f71bd9db75247d7e8fed8df71d9e9f8.svg?invert_in_darkmode&sanitize=true" align=middle width=27.654825pt height=22.46574pt/> number, ratio between wall temperature and
- adiabatic wall temperature, type of viscosity law (visc_type=1 power law, visc_type=2, Sutherland law) and ratio between
- S(110.4K) and reference temperature. If s2tinf=0 s2tinf is automatically computed by the solver. 
+ `Mach      Reynolds (friction)  temp_ratio   visc_type   Tref (dimensional)   turb_inflow`. `Mach` is the bulk Mach number for channel flow (defined with Twall) and the freestream Mach number for boundary layer and SBLI cases. `Reynolds` is the target friction Reynolds number. `temp_ratio` is the ratio between the wall temperature and the adiabatic wall temperature for boundary layer and SBLI, whereas for channel flow represents the ratio between bulk and wall temperature.  `visc_type` selects the viscosity law (visc_type=1 power law, visc_type=2 Sutherland law, with reference dimensional temperature specified by `Tref`). For boundary layers and SBLI, `turb_inflow` selects the turbulent inflow type (if > 0. implies digital filtering and its value is used to control/reduce temperature fluctuations, if < 0. implies recycling-rescaling method with constant spanwise shifting and its value denotes the location of the recycling station).  
 
  `istat  nstat` cumulative flow statistics are evaluate every istat iterations. nstat is the number of streamwise stations
   at which flow statistics are extracted. nstat is meaningful for boundary layer flow (iflow > 0) 
