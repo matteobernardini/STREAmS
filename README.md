@@ -120,13 +120,13 @@ srun ./streams
  `Ny_wr     Ly_wr      dy+_w  jbgrid` specify the wall-normal mesh features. In all cases`dy+_w` is the desired spacing at the wall in inner units, <img src="svgs/f860ead74a4dff89d33b26468c06bbf7.svg?invert_in_darkmode&sanitize=true" align=middle width=32.43933pt height=26.17758pt/>.
  When `flow_type >0`, `Ny_wr` denotes the number of grid points in the wall-resolved region, ranging from y=0 (wall) up to y=`Ly_wr`, where a sinh mapping is applied. Both `Ny_wr` and `Ly_wr` can be specified when iflow = 1 (turbulent boundary layer), then a geometric progression is applied from y=`Ly_wr` up to y = Ly. When iflow = 2 (shock/boundary-layer interaction), `Ny_wr` must be specified but `Ly_wr` is automatically computed.
 
- `nblocks(1)  nblocks(3)` define the MPI decomposition along x (streamwise) and z (spanwise). These numbers 
- must be consistent to nxmax, nymax, and nzmax. In particular the following divisions must have zero remainder:
- nxmax/nblocks(1), nzmax/nzmax. Moreover, for iflow>0 cases also nxmax/nblocks(3) and nymax/nblocks(1)
- must have zero remainder.  The product  nblocks(1)\*nblocks(3) must equal the total number of launched MPI processes.
+ `MPI_x_split  MPI_z_split` define the MPI decomposition along x (streamwise) and z (spanwise). These numbers 
+ must be consistent to `Nx`, `Ny`, and `Nz`. In particular the following divisions must have zero remainder:
+ `Nx/MPI_x_split`, `Nz/MPI_z_split`. Moreover, for `flow_type`>0 cases also `Nx/MPI_z_split` and `Ny/MPI_x_split`
+ must have zero remainder.  The product `MPI_x_split * MPI_z_split` must equal the total number of launched MPI processes.
 
- `tresduc  ximp  deflec` <img src="svgs/c7b272ea7e9157f40452750471042300.svg?invert_in_darkmode&sanitize=true" align=middle width=114.522375pt height=22.83138pt/> is the WENO threshold (WENO is active if the shock sensor value exceeds tresduc),
- ximp is the shock abscissa and deflec is the shock angle. ximp and deflec are used only if iflow > 0.
+ `sensor_threshold   xshock_imp   deflec_shock` <img src="svgs/c7b272ea7e9157f40452750471042300.svg?invert_in_darkmode&sanitize=true" align=middle width=114.522375pt height=22.83138pt/> is the WENO threshold (WENO is active if the shock sensor value exceeds `sensor_threshold`),
+ `xshock_imp` is the shock abscissa and `deflec_shock` is the shock angle (used only when `flow_type` > 0).
 
  `idiski ncyc   cfl  nstep nprint io_type` idiski selects the start type (0=init, 1=restart, 2=collect statistics at runtime), ncyc the total number
  of iterations, cfl is the CFL number. The time step is re-evaluated every nstep iterations, nprint 
