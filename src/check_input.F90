@@ -53,6 +53,9 @@ subroutine check_input(step)
   if (mod(nzmax, nblocks(3)) /= 0) then
    call fail_input("nzmax must be multiple of nblocks(3)")
   endif
+  if (iflow==0.and.jbgrid>0) then
+   if (mod(nymax,2)/=0) call fail_input("nymax must be even if jbgrid > 0")
+  endif
   if (iflow > 0) then
    inquire(file="database_bl.dat", exist=file_exists)
    if (.not.file_exists) then

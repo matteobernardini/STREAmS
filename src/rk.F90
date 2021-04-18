@@ -51,7 +51,6 @@ subroutine rk
   gamdt = gam*dt
   alpdt = alp*dt
 !
-!st = mpi_wtime()
  !$cuf kernel do(3) <<<*,*>>> 
   do k=1,nz
    do j=1,ny
@@ -64,6 +63,8 @@ subroutine rk
    enddo
   enddo
  !@cuf iercuda=cudaDeviceSynchronize()
+!
+ if (xrecyc>0._mykind) call recyc
 !
 #ifdef CUDA_ASYNC
   call bc(0)

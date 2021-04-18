@@ -188,7 +188,7 @@ subroutine constants
   coeff_midpi(3) =   3._mykind/256._mykind
  end select
 !
-!call compute_coeff_xyz_midpi()
+ call compute_coeff_xyz_midpi()
 !
 !Coefficients for RK 3rd order time integration
 !

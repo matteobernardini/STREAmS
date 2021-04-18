@@ -65,6 +65,12 @@ subroutine generatewmean
  100  format(20ES20.10)
  enddo
  if (masterproc) close(182)
+ if (xrecyc>0._mykind) then
+  betarecyc = deltavvec(irecyc+nx*ibrecyc)/deltavvec(1)
+  if (masterproc) write(*,*) 'Recycling beta factor = ', betarecyc
+  if (masterproc) write(*,*) 'Urbin-Knight beta factor = ', &
+          ((1._mykind+xrecyc*0.27_mykind**1.2_mykind/re**0.2_mykind)**(5._mykind/6._mykind))**0.1_mykind
+ endif
 !
 !Compute locally wmean from 1-ng to nx+ng+1
 !
@@ -105,6 +111,20 @@ subroutine generatewmean
   do i=1-ng,nx+ng
    wmean(5,i,j) = p0*gm+0.5_mykind*(wmean(2,i,j)**2+wmean(3,i,j)**2)/wmean(1,i,j)
   enddo
+ enddo
+!
+ do j=1-ng,ny+ng
+  yplus_inflow(j) = y(j)/deltavvec(1)
+  eta_inflow(j)   = y(j)/deltavec (1)
+  yplus_recyc(j)  = y(j)/deltavvec(irecyc+nx*ibrecyc)
+  eta_recyc(j)    = y(j)/deltavec (irecyc+nx*ibrecyc)
+ enddo
+!
+ do j=1,ny
+  call locateval(yplus_recyc(1:ny),ny,yplus_inflow(j),map_j_inn(j))
+  call locateval(eta_recyc(1:ny),ny,eta_inflow(j),map_j_out(j))
+  weta_inflow(j) = 0.5_mykind*(1._mykind+tanh((4._mykind*(eta_inflow(j)-0.2_mykind))&
+                 /(0.2_mykind+eta_inflow(j)*0.6_mykind))/tanh(4._mykind))
  enddo
 !
 end subroutine generatewmean

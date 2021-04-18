@@ -15,6 +15,9 @@ subroutine generategrid
  real(mykind) :: b,bold
  real(mykind) :: rlygp,rgp,rgpold
  real(mykind) :: rlywrold
+ real(mykind) :: rjb,alfb,ceta,ynf,rj,fsm,fsl
+ real(mykind), dimension(nymax/2+1) :: ynold
+ integer :: nsmooy
 !
  real(mykind), dimension(nymax+ng) :: tmpyg
 !
@@ -41,18 +44,55 @@ subroutine generategrid
   call readgrid()
  case(0)  ! Channel Flow
 !
-  dcsi = 1._mykind/nymax
-  b    = 1._mykind
-  do
-   bold = b
-   b = atanh(tanh(0.5_mykind*b)*(dyp_target/retauinflow-1._mykind))/(dcsi-0.5_mykind)
-   if (abs(b-bold) < tol_iter) exit
-  enddo
-  if (masterproc) write(*,*) 'Stretching parameter b =', b
-  do j=1,ny+1
-   csi   = (real(j,mykind)-1._mykind)*dcsi
-   yn(j) = tanh(b*(csi-0.5_mykind))/tanh(b*0.5_mykind)
-  enddo
+  if (jbgrid<=0) then ! Tanh mapping function
+   dcsi = 1._mykind/nymax
+   b    = 1._mykind
+   do
+    bold = b
+    b = atanh(tanh(0.5_mykind*b)*(dyp_target/retauinflow-1._mykind))/(dcsi-0.5_mykind)
+    if (abs(b-bold) < tol_iter) exit
+   enddo
+   if (masterproc) write(*,*) 'Stretching parameter b =', b
+   do j=1,ny+1
+    csi   = (real(j,mykind)-1._mykind)*dcsi
+    yn(j) = tanh(b*(csi-0.5_mykind))/tanh(b*0.5_mykind)
+   enddo
+  else ! Piros stretching function
+   rjb = real(jbgrid,mykind)
+   alfb = 1.25_mykind
+   ceta = 0.8_mykind
+   do j=1,ny/2+1
+    rj = real(j-1,mykind)
+    yn(j) = 1._mykind/(1._mykind+(rj/rjb)**2)
+    yn(j) = yn(j)*(rj*dyp_target+(0.75_mykind*alfb*ceta*rj)**(4._mykind/3._mykind)*(rj/rjb)**2)
+!   csi   = (real(j,mykind)-1._mykind)*dcsi
+!   yn(j) = tanh(b*(csi-0.5_mykind))/tanh(b*0.5_mykind)
+   enddo
+   ynf = yn(ny/2+1)
+   do j=1,ny/2+1
+    yn(j) = yn(j)/ynf
+   enddo
+!
+   nsmooy = 50
+   do l=1,nsmooy
+    ynold = yn(1:ny/2+1)
+    do j=2,ny/2
+     fsm = 6._mykind-2._mykind*(tanh((yn(j)-0.75_mykind)/0.15_mykind)+1._mykind)*0.5_mykind
+     fsl = 0.5_mykind*(6._mykind-fsm)
+     yn(j) = fsl*ynold(j-1)+fsm*ynold(j)+fsl*ynold(j+1)
+     yn(j) = yn(j)/6._mykind
+    enddo
+   enddo
+!
+   do j=1,ny/2+1
+    yn(j) = yn(j)-1._mykind
+   enddo
+   do j=1,ny/2
+    yn(ny+2-j) = -yn(j)
+   enddo
+!
+  endif
+!
   do j=1,ny
    yg(j) = 0.5_mykind*(yn(j)+yn(j+1))
   enddo
@@ -63,25 +103,40 @@ subroutine generategrid
 !
  case(1) ! BL
 !
-! Create sinh mesh from 0 up to rlywr, then geometric progression
+  if (jbgrid<=0) then ! Sinh mesh from 0 up to rlywr
+   dcsi = 1._mykind/(nymaxwr-1)
 !
-  dcsi = 1._mykind/(nymaxwr-1)
+   b = 1._mykind
+   do
+    bold = b
+    b = asinh(sinh(b*dcsi)*rlywr*retauinflow/dyp_target)
+    if (abs(b-bold) < tol_iter) exit
+!   write(*,*) 'Stretching parameter b =', b 
+   enddo
+   if (masterproc) write(*,*) 'Stretching parameter b =', b 
 !
-  b = 1._mykind
-  do
-   bold = b
-   b = asinh(sinh(b*dcsi)*rlywr*retauinflow/dyp_target)
-   if (abs(b-bold) < tol_iter) exit
-!  write(*,*) 'Stretching parameter b =', b 
-  enddo
-  if (masterproc) write(*,*) 'Stretching parameter b =', b 
+   do j=1,nymaxwr+1
+    csi = (j-1)*dcsi
+    yg(j) = rlywr*sinh(b*csi)/sinh(b)
+   enddo
+  else
+   rjb = real(jbgrid,mykind)
+   alfb = 1.25_mykind
+   ceta = 0.8_mykind
+   do j=1,nymaxwr+1
+    rj = real(j-1,mykind)
+    yg(j) = 1._mykind/(1._mykind+(rj/rjb)**2)
+    yg(j) = yg(j)*(rj*dyp_target+(0.75_mykind*alfb*ceta*rj)**(4._mykind/3._mykind)*(rj/rjb)**2)
+   enddo
+   ynf = yg(nymaxwr+1)
+   do j=1,nymaxwr+1
+    yg(j) = yg(j)/ynf*rlywr
+   enddo
+  endif 
 !
-  do j=1,nymaxwr+1
-   csi = (j-1)*dcsi
-   yg(j) = rlywr*sinh(b*csi)/sinh(b)
-  enddo
   dy1 = yg(nymaxwr+1)-yg(nymaxwr)
   if (masterproc) write(*,*) 'Delta y+_w = ', yg(2)*retauinflow
+  if (masterproc) write(*,*) 'Delta y+ (rlywr) = ', dy1*retauinflow
 !
   rlygp = rly-rlywr
   nygp  = nymax-nymaxwr

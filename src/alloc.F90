@@ -45,7 +45,15 @@ subroutine allocate_vars()
  allocate(by_df_gpu(3,ny,-nfmax:nfmax))
  allocate(bz_df_gpu(3,ny,-nfmax:nfmax))
  allocate(amat_df_gpu(3,3,ny))
-
+!
+ allocate(yplus_inflow_gpu(1-ng:ny+ng))
+ allocate(yplus_recyc_gpu(1-ng:ny+ng))
+ allocate(eta_inflow_gpu(1-ng:ny+ng))
+ allocate(eta_recyc_gpu(1-ng:ny+ng))
+ allocate(map_j_inn_gpu(ny))
+ allocate(map_j_out_gpu(ny))
+ allocate(weta_inflow_gpu(ny))
+!
  allocate(gplus_x (5,2*iweno,ny,nz))
  allocate(gminus_x(5,2*iweno,ny,nz))
  allocate(gplus_y (5,2*iweno,nx,nz))
@@ -147,6 +155,13 @@ subroutine allocate_vars()
  allocate(xgh(0:nxmax))
  allocate(ygh(0:nymax))
  allocate(zgh(0:nzmax))
+ allocate(yplus_inflow(1-ng:ny+ng))
+ allocate(yplus_recyc(1-ng:ny+ng))
+ allocate(eta_inflow(1-ng:ny+ng))
+ allocate(eta_recyc(1-ng:ny+ng))
+ allocate(map_j_inn(ny))
+ allocate(map_j_out(ny))
+ allocate(weta_inflow(ny))
 !
  allocate(ibc(6))
  allocate(dxg(nxmax))
@@ -195,6 +210,9 @@ subroutine allocate_vars()
  allocate(ducbuf6r(nx,ny,ng))
  allocate(yg(1-ng:nymax+ng  ))
  allocate(zg(1-ng:nzmax+ng  ))
+!
+ allocate(wrecyc_gpu(ng,ny,nz,nv))
+ allocate(wrecycav_gpu(ng,ny,nv))
 !
 endsubroutine allocate_vars
 
@@ -260,6 +278,13 @@ subroutine copy_cpu_to_gpu()
  by_df_gpu        = by_df
  bz_df_gpu        = bz_df
  amat_df_gpu      = amat_df
+ yplus_inflow_gpu = yplus_inflow
+ yplus_recyc_gpu  = yplus_recyc
+ eta_inflow_gpu   = eta_inflow
+ eta_recyc_gpu    = eta_recyc
+ map_j_inn_gpu    = map_j_inn
+ map_j_out_gpu    = map_j_out
+ weta_inflow_gpu  = weta_inflow
 #else
  call move_alloc( w_order      , w_gpu           )
  call move_alloc( fl           , fl_gpu          )
@@ -304,6 +329,13 @@ subroutine copy_cpu_to_gpu()
  call move_alloc( by_df        , by_df_gpu       )
  call move_alloc( bz_df        , bz_df_gpu       )
  call move_alloc( amat_df      , amat_df_gpu     )
+ call move_alloc( yplus_inflow , yplus_inflow_gpu)
+ call move_alloc( yplus_recyc  , yplus_recyc_gpu )
+ call move_alloc( eta_inflow   , eta_inflow_gpu  )
+ call move_alloc( eta_recyc    , eta_recyc_gpu   )
+ call move_alloc( map_j_inn    , map_j_inn_gpu   )
+ call move_alloc( map_j_out    , map_j_out_gpu   )
+ call move_alloc( weta_inflow  , weta_inflow_gpu )
 #endif
 end subroutine copy_cpu_to_gpu
 

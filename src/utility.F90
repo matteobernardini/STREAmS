@@ -1,22 +1,47 @@
-subroutine locateval(xx,n,x,ii)
+!subroutine locateval(xx,n,x,ii)
+!!
+! use mod_streams, only: mykind
+! implicit none
+!!
+! integer, intent(in) :: n
+! integer, intent(out) :: ii
+! real(mykind), dimension(1:n), intent(in) :: xx
+! real(mykind), intent(in) :: x
+!!
+! if (x>xx(n)) then
+!  ii = n
+! else
+!  ii = 0
+!  do while (xx(ii+1)<x)
+!   ii = ii+1
+!  enddo
+! endif
+!!
+!end subroutine locateval
 !
+subroutine locateval(xx,n,x,ii)
+!        
  use mod_streams, only: mykind
  implicit none
-!
+! 
  integer, intent(in) :: n
  integer, intent(out) :: ii
  real(mykind), dimension(1:n), intent(in) :: xx
- real(mykind), intent(in) :: x
+ real(mykind) :: x
+ integer :: il,jm,juu
 !
- if (x>xx(n)) then
-  ii = n
- else
-  ii = 0
-  do while (xx(ii+1)<x)
-   ii = ii+1
-  enddo
- endif
-!
+ il=0
+ juu=n+1
+ do while (juu-il.gt.1)
+  jm=(juu+il)/2
+  if ((xx(n).gt.xx(1)).eqv.(x.gt.xx(jm))) then
+   il=jm
+  else
+   juu=jm
+  endif
+ end do
+ ii=il
+ return
 end subroutine locateval
 !
 subroutine pol_int(x,y,n,xs,ys)

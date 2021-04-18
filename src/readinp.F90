@@ -6,6 +6,8 @@ subroutine readinp
  implicit none
 !
  integer :: l, i_skip
+ integer :: ibc_inflow
+ real(mykind) :: turb_inflow
 !
 !
 ! iflow = 0 ==> Channel flow
@@ -33,7 +35,7 @@ subroutine readinp
  read (12,*) idiski, ncyc, cfl, nstep, nprint, io_type
  read (12,*)
  read (12,*)
- read (12,*) rm, retauinflow, trat, visc_type, tref_dimensional, dftscaling
+ read (12,*) rm, retauinflow, trat, visc_type, tref_dimensional, turb_inflow
  read (12,*)
  read (12,*)
  read (12,*) istat, nstat
@@ -53,9 +55,17 @@ subroutine readinp
 !
  call check_input(2)
 !
- !ivis   = 4
- !iorder = 4
- !iweno  = 2
+ xrecyc = -1._mykind
+ if (iflow>0) then
+  if (turb_inflow<0._mykind) then
+   ibc_inflow = 10
+   xrecyc = -turb_inflow
+   if (xrecyc>rlx) call fail_input("Recycling station outside computational domain")
+  else
+   ibc_inflow = 9
+   dftscaling = turb_inflow
+  endif
+ endif
 !
  ibc   = 0
  ibcnr = 0
@@ -71,12 +81,12 @@ subroutine readinp
   ibc(3) = 5 ! Staggered wall
   ibc(4) = 5
  case (1) ! BL
-  ibc(1) = 9 ! Digital filtering
+  ibc(1) = ibc_inflow
   ibc(2) = 4 ! Extrapolation + non reflecting treatment
   ibc(3) = 8 ! Wall + reflecting treatment
   ibc(4) = 4
  case (2) ! SBLI
-  ibc(1) = 9
+  ibc(1) = ibc_inflow
   ibc(2) = 4
   ibc(3) = 8
   ibc(4) = 7

@@ -16,6 +16,7 @@ subroutine manage_solver
  if (telaps>tsol_restart(istore_restart)) saverst = .true.
 !
  if (updatestat.or.savefield.or.saverst) then
+  if (xrecyc>0._mykind) call recyc
   call updateghost()
   call prims()
   call copy_gpu_to_cpu()

@@ -21,6 +21,7 @@ subroutine solver
  if (cfl>0._mykind) call step()
  if (masterproc) write(*,*) 'Done'
 !
+ if (xrecyc>0._mykind) call recyc
  call updateghost() ! Needed here only for subsequent prims call
  call prims()
  if (tresduc>0._mykind.and.tresduc<1._mykind) then

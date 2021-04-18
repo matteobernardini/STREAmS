@@ -10,16 +10,16 @@ subroutine bc(inr)
 ! Table of values for parameter (ibc(ilat))
 ! ilat = 1,6
 !
-!     ____________           ibc = 1 -> 
-!    /|         /|           ibc = 2 -> extrapolation 
-!   / |  4     / |           ibc = 3 -> 
-!  /  |    5  /  |  j        ibc = 4 -> nonreflecting
-! /__________/   |  |        ibc = 5 -> wall (staggered)
-! | 1 |______|_2 |  |____ i  ibc = 6 -> wall
-! |  / 6     |  /  /         ibc = 7 -> oblique shock imposed
-! | /    3   | /  /          ibc = 8 -> wall (PL type bc)
-! |/         |/  k           ibc = 9 -> digital filtering for turbulent inflow
-! /----------/
+!     ____________           ibc = 1  -> freestream
+!    /|         /|           ibc = 2  -> extrapolation 
+!   / |  4     / |           ibc = 3  -> 
+!  /  |    5  /  |  j        ibc = 4  -> nonreflecting
+! /__________/   |  |        ibc = 5  -> wall (staggered)
+! | 1 |______|_2 |  |____ i  ibc = 6  -> wall
+! |  / 6     |  /  /         ibc = 7  -> oblique shock imposed
+! | /    3   | /  /          ibc = 8  -> wall (PL type bc)
+! |/         |/  k           ibc = 9  -> digital filtering for turbulent inflow
+! /----------/               ibc = 10 -> Recycling-rescaling turbulent inflow
 !
 ! inr = 0 -> steady-type    boundary conditions
 ! inr = 1 -> non-reflecting boundary conditions
@@ -43,6 +43,9 @@ subroutine bc(inr)
       call bcdf(ilat)
       dfupdated = .true.
      endif
+    endif
+    if (ibc(ilat)==10) then
+     call bcrecyc(ilat)
     endif
    enddo
 !

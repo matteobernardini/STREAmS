@@ -25,6 +25,8 @@ subroutine setup
 !===================================================
  call constants()
 !===================================================
+ if (xrecyc>0._mykind) call recyc_prepare()
+!===================================================
  if (masterproc) write(*,*) 'Initialize field'
  call init()
  call checkdt()

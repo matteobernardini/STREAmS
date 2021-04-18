@@ -52,7 +52,7 @@ subroutine startmpi
  read (12,*) nxmax,nymax,nzmax
  read (12,*)
  read (12,*)
- read (12,*) nymaxwr,rlywr,dyp_target
+ read (12,*) nymaxwr,rlywr,dyp_target,jbgrid
  read (12,*)
  read (12,*)
  read (12,*) ng, ivis, iorder, iweno
