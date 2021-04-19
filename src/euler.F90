@@ -2368,13 +2368,15 @@ subroutine wenorecsymbo(nvar,vp,vm,vminus,vplus,iweno)
 !    
       do m=1,nvar
 !    
-       betap(3) = d0*(vp(m,i+1)-2._mykind*vp(m,i+2)+vp(m,i+3))**2+d1*(5._mykind*vp(m,i+1)-8._mykind*vp(m,i+2)+3._mykind*vp(m,i+3))**2
+       betap(3) = d0*(vp(m,i+1)-2._mykind*vp(m,i+2)+vp(m,i+3))**2+d1*(5._mykind*vp(m,i+1)-8._mykind*vp(m,i+2)+&
+       3._mykind*vp(m,i+3))**2
        betap(2) = d0*(vp(m,i)  -2._mykind*vp(m,i+1)+vp(m,i+2))**2+d1*(3._mykind*vp(m,i)  -4._mykind*vp(m,i+1)+vp(m,i+2))**2
        betap(1) = d0*(vp(m,i-1)-2._mykind*vp(m,i)  +vp(m,i+1))**2+d1*(          vp(m,i-1)-vp(m,i+1) )**2
        betap(0) = d0*(vp(m,i)  -2._mykind*vp(m,i-1)+vp(m,i-2))**2+d1*(3._mykind*vp(m,i)-4._mykind*vp(m,i-1)+vp(m,i-2))**2
        betap(3) = max(betap(0),betap(1),betap(2),betap(3))
 ! 
-       betam(3) = d0*(vm(m,i  )-2._mykind*vm(m,i-1)+vm(m,i-2))**2+d1*(5._mykind*vm(m,i  )-8._mykind*vm(m,i-1)+3._mykind*vm(m,i-2))**2
+       betam(3) = d0*(vm(m,i  )-2._mykind*vm(m,i-1)+vm(m,i-2))**2+d1*(5._mykind*vm(m,i  )-8._mykind*vm(m,i-1)+&
+       3._mykind*vm(m,i-2))**2
        betam(2) = d0*(vm(m,i+1)-2._mykind*vm(m,i)  +vm(m,i-1))**2+d1*(3._mykind*vm(m,i+1)-4._mykind*vm(m,i)+vm(m,i-1))**2
        betam(1) = d0*(vm(m,i+2)-2._mykind*vm(m,i+1)+vm(m,i  ))**2+d1*(          vm(m,i+2)-          vm(m,i) )**2
        betam(0) = d0*(vm(m,i+1)-2._mykind*vm(m,i+2)+vm(m,i+3))**2+d1*(3._mykind*vm(m,i+1)-4._mykind*vm(m,i+2)+vm(m,i+3))**2
