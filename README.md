@@ -25,6 +25,10 @@ Currently, three canonical wall-bounded flows can be simulated:
 STREAmS can be used on both local clusters and massively parallel HPC architectures, including those based on
 Graphical Processing Units (GPUs). 
 
+# References
+
+Bernardini, M., Modesti, D., Salvadore, F., & Pirozzoli, S. (2021). STREAmS: A high-fidelity accelerated solver for direct numerical simulation of compressible turbulent flows. Computer Physics Communications, 263, 107906. https://doi.org/10.1016/j.cpc.2021.107906
+
 # Compiling
 
 STREAmS requires (1) a Fortran compiler and (2) an MPI library. For the GPU CUDA version, the NVIDIA compiler
