@@ -67,7 +67,7 @@ subroutine bcrelax(ilat)
   do k=1,nz
    do j=1,ny
 !
-    i   = 1
+    i     = 1
     mask1 = 1._mykind
     mask2 = 1._mykind
     mask3 = 1._mykind
@@ -198,11 +198,16 @@ subroutine bcrelax(ilat)
     ev5    =  uu+c
 !
 !   Local array of conservative variables
-    wloc0_1 = winf_gpu(1)
-    wloc0_2 = winf_gpu(2)
-    wloc0_3 = winf_gpu(3)
-    wloc0_4 = winf_gpu(4)
-    wloc0_5 = winf_gpu(5)
+!   wloc0_1 = winf_gpu(1)
+!   wloc0_2 = winf_gpu(2)
+!   wloc0_3 = winf_gpu(3)
+!   wloc0_4 = winf_gpu(4)
+!   wloc0_5 = winf_gpu(5)
+    wloc0_1 = w_gpu(0,j,k,1)
+    wloc0_2 = w_gpu(0,j,k,2)
+    wloc0_3 = w_gpu(0,j,k,3)
+    wloc0_4 = w_gpu(0,j,k,4)
+    wloc0_5 = w_gpu(0,j,k,5)
     l=1
     ll = l!i + 1 - l
     wloc1_1 = w_gpu(ll,j,k,1)
@@ -573,12 +578,12 @@ subroutine bcrelax(ilat)
 !   Exploit LODI relations (just in case)
 !
 !   Poinsot & Lele subsonic inflow treatment
-!   if (winfyz_gpu(2,j,k)/winfyz_gpu(1,j,k)/(sqrt(gamma)*t0)<1._mykind) then
-!    dwcdx2 = gm1*dwcdx1   ! incoming entropy wave
-!    dwcdx3 = 0._mykind    ! incoming vorticity wave
-!    dwcdx4 = 0._mykind    ! incoming vorticity wave
-!    dwcdx5 = dwcdx1       ! incoming acoustic wave
-!   endif
+    if (ibcnr_gpu(1)==2) then
+     dwcdx2 = gm1*dwcdx1   ! incoming entropy wave
+     dwcdx3 = 0._mykind    ! incoming vorticity wave
+     dwcdx4 = 0._mykind    ! incoming vorticity wave
+     dwcdx5 = dwcdx1       ! incoming acoustic wave
+    endif
 !
 !   Return to conservative variables 
     !m=1
@@ -759,7 +764,7 @@ subroutine bcrelax(ilat)
   do k=1,nz
    do j=1,ny
 !
-    i  = nx
+    i     = nx
     mask1 = 0._mykind
     mask2 = 0._mykind
     mask3 = 0._mykind
@@ -890,11 +895,16 @@ subroutine bcrelax(ilat)
     ev5    =  uu+c
 !
 !   Local array of conservative variables
-    wloc0_1 = winf_gpu(1)
-    wloc0_2 = winf_gpu(2)
-    wloc0_3 = winf_gpu(3)
-    wloc0_4 = winf_gpu(4)
-    wloc0_5 = winf_gpu(5)
+!   wloc0_1 = winf_gpu(1)
+!   wloc0_2 = winf_gpu(2)
+!   wloc0_3 = winf_gpu(3)
+!   wloc0_4 = winf_gpu(4)
+!   wloc0_5 = winf_gpu(5)
+    wloc0_1 = w_gpu(nx+1,j,k,1)
+    wloc0_2 = w_gpu(nx+1,j,k,2)
+    wloc0_3 = w_gpu(nx+1,j,k,3)
+    wloc0_4 = w_gpu(nx+1,j,k,4)
+    wloc0_5 = w_gpu(nx+1,j,k,5)
     l=1
     ll = i + 1 - l
     wloc1_1 = w_gpu(ll,j,k,1)
@@ -2120,10 +2130,10 @@ subroutine bcrelax(ilat)
    do i=1,nx
 !
     j = ny
-    mask1 = 0._mykind
-    mask2 = 0._mykind
-    mask3 = 0._mykind
-    mask4 = 0._mykind
+    mask1 = 1._mykind
+    mask2 = 1._mykind
+    mask3 = 1._mykind
+    mask4 = 1._mykind
     mask5 = 1._mykind
 !
     rho =  w_gpu(i,j,k,1)

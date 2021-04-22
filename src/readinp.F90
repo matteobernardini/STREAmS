@@ -85,11 +85,13 @@ subroutine readinp
   ibc(2) = 4 ! Extrapolation + non reflecting treatment
   ibc(3) = 8 ! Wall + reflecting treatment
   ibc(4) = 4
+  ibcnr(1) = 1
  case (2) ! SBLI
   ibc(1) = ibc_inflow
   ibc(2) = 4
   ibc(3) = 8
   ibc(4) = 7
+  ibcnr(1) = 1
  end select
 !
  ndim = 3 ! default number of dimensions

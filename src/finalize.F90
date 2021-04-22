@@ -9,6 +9,7 @@ subroutine finalize
  real(mykind) :: elapsed,startTiming,endTiming
 !
  if (io_type == 1) then
+  if (xrecyc>0._mykind) call recyc
   call updateghost()
   call prims()
   call copy_gpu_to_cpu()
@@ -29,6 +30,7 @@ subroutine finalize
    call writedf_serial()
   endif
  elseif (io_type == 2) then
+  if (xrecyc>0._mykind) call recyc
   call updateghost()
   call prims()
   call copy_gpu_to_cpu()

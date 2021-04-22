@@ -44,9 +44,7 @@ subroutine bc(inr)
       dfupdated = .true.
      endif
     endif
-    if (ibc(ilat)==10) then
-     call bcrecyc(ilat)
-    endif
+    if (ibc(ilat)==10) call bcrecyc(ilat)
    enddo
 !
   else
@@ -54,9 +52,12 @@ subroutine bc(inr)
 !  Unsteady-type BCs (update boundary fluxes)
 !
    do ilat=1,2*ndim ! loop on all sides of the boundary (3D -> 6, 2D -> 4)
-    if (ibc(ilat)==4) call bcrelax  (ilat)
-    if (ibc(ilat)==7) call bcrelax  (ilat)
-    if (ibc(ilat)==8) call bcwall_pl(ilat)
+    select case (ibc(ilat))
+    case(4,7,9,10)
+     call bcrelax(ilat)
+    case(8)
+     call bcwall_pl(ilat)
+    end select
    enddo
   endif
 !  

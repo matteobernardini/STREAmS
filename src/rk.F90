@@ -14,12 +14,12 @@ subroutine rk
  real(mykind) :: elapsed,startTiming,endTiming
 !
  lmax = iorder/2
- i1 = 1  ; if (ibc(1)==4.or.ibc(1)==8) i1 = 2    ! Node 1  computed with characteristic decomposition
- i2 = nx ; if (ibc(2)==4.or.ibc(2)==8) i2 = nx-1 ! Node nx computed with characteristic decomposition
- j1 = 1  ; if (ibc(3)==4.or.ibc(3)==8) j1 = 2    ! Node 1  computed with characteristic decomposition
- j2 = ny ; if (ibc(4)==4.or.ibc(4)==7) j2 = ny-1 ! Node ny computed with characteristic decomposition
- k1 = 1  ; if (ibc(5)==4.or.ibc(5)==8) k1 = 2    ! Node 1  computed with characteristic decomposition
- k2 = nz ; if (ibc(6)==4.or.ibc(6)==7) k2 = nz-1 ! Node nz computed with characteristic decomposition
+ i1 = 1  ; if (ibc(1)==9.or.ibc(1)==10) i1 = 2    ! Node 1  computed with characteristic decomposition
+ i2 = nx ; if (ibc(2)==4.or.ibc(2)==8)  i2 = nx-1 ! Node nx computed with characteristic decomposition
+ j1 = 1  ; if (ibc(3)==4.or.ibc(3)==8)  j1 = 2    ! Node 1  computed with characteristic decomposition
+ j2 = ny ; if (ibc(4)==4.or.ibc(4)==7)  j2 = ny-1 ! Node ny computed with characteristic decomposition
+ k1 = 1  ; if (ibc(5)==4.or.ibc(5)==8)  k1 = 2    ! Node 1  computed with characteristic decomposition
+ k2 = nz ; if (ibc(6)==4.or.ibc(6)==7)  k2 = nz-1 ! Node nz computed with characteristic decomposition
  last_call = 3
  call2 = .false.
  call3 = .false.
