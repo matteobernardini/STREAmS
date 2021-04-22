@@ -156,6 +156,10 @@ subroutine check_input(step)
    if (xsh < 0._mykind .or. xsh > rlx) then
     call fail_input("xsh must be in the range [0:rlx]. Please fix ximp to ensure that")
    endif
+   if (xrecyc>0._mykind) then
+    if (xrecyc>xsh) call warning_input("Recycling station located downstream the &
+     intersection between the oblique shock and the top domain")
+   endif
   endif
  endif
 !
