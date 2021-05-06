@@ -3,6 +3,7 @@ subroutine computeresidual
 ! Computation of residual
 !
  use mod_streams
+ use, intrinsic :: ieee_arithmetic
  implicit none
 !
  integer :: i,j,k
@@ -50,7 +51,8 @@ subroutine computeresidual
 !
  rntot = real(nx,mykind)*real(ny,mykind)*real(nz,mykind)*real(nproc,mykind)
  rtrms = sqrt(rtrms/rntot)
- if (rtrms/=rtrms) then
+ if (ieee_is_nan(rtrms)) then
+!if (rtrms/=rtrms) then
   if (masterproc) write(*,*) 'BOOM!!!'
   call mpi_barrier(mp_cart,iermpi)
   call mpi_abort(mp_cart,99,iermpi)
