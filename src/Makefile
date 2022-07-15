@@ -33,7 +33,7 @@ ifeq (${COMPILE},"pgi-cuda") # mpif90 shipped with PGI compiler
     FC = mpif90
     ifeq (${MODE},"opt") 
         #OLEVEL = -O3 -Mcuda=ccall,cuda10.2,ptxinfo -DUSE_CUDA -DCUDA_ASYNC #-DNOCUDAAWAREMPI
-        OLEVEL = -O3 -Mcuda=ccall,cuda10.2 -DUSE_CUDA -DCUDA_ASYNC #-DNOCUDAAWAREMPI
+        OLEVEL = -O3 -Mcuda=ccall,cuda11.0 -DUSE_CUDA -DCUDA_ASYNC #-DNOCUDAAWAREMPI
     else
         OLEVEL = -Mcuda=ccall,cuda10.2 -DUSE_CUDA -DCUDA_ASYNC
     endif
