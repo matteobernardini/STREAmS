@@ -17,7 +17,7 @@ subroutine writegridplot3d
  integer :: size_real, size_integer
  integer :: ntot
  integer (kind=mpi_offset_kind) :: offset
- real(mykind), dimension(3,nx,ny,nz) :: grid3d
+ real(mykind), dimension(:,:,:,:), allocatable :: grid3d
 !
  character(4) :: nastore
 !
@@ -31,6 +31,7 @@ subroutine writegridplot3d
  endif
  call mpi_barrier(mpi_comm_world,iermpi)
 !
+ allocate(grid3d(3,nx,ny,nz))
  do k=1,nz
   do j=1,ny
    do i=1,nx
@@ -68,5 +69,6 @@ subroutine writegridplot3d
 ! 
  call MPI_FILE_CLOSE(mpi_io_file,iermpi)
  call MPI_TYPE_FREE(filetype,iermpi)
+ deallocate(grid3d)
 !
 end subroutine writegridplot3d
