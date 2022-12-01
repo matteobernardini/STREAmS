@@ -1,5 +1,17 @@
-<div style="font-size: 100px; font-weight: bold; color: #c33;">A new version of the solver STREAmS-2.0 is now available https://github.com/STREAmS-CFD/STREAmS-2. 
-We strongly suggest to use the new release.</div>
+**A new version of the solver STREAmS-2.0 is now available https://github.com/STREAmS-CFD/STREAmS-2. 
+We strongly suggest to use the new release.**
+
+
+
+
+
+
+
+
+
+
+
+
 ```
 !=============================================================
 !
